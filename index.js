@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ---------- Config ----------
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8111508881:AAElg13q08OWf8RJNsJu9G0U4eng87SDQeQ';
+const TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8111508881:AAEwKL2g3c8FOWJ5K2Jc3f743uNVpOEaThE';
 const ADMIN_ID = Number(process.env.ADMIN_ID || '7830539814');
 
 const DATA_DIR = path.resolve(__dirname);
