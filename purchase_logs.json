@@ -1,0 +1,478 @@
+[
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-12T14:55:03.362Z",
+    "photo": "AgACAgEAAxkBAAIICGhK6kfW9WRYVC4xfYhUbr6Ion8KAALSrjEbuQpYRmFLbyaHNowIAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "USDT (ERC20)",
+    "time": "2025-06-12T15:20:18.591Z",
+    "photo": "AgACAgEAAxkBAAIICGhK6kfW9WRYVC4xfYhUbr6Ion8KAALSrjEbuQpYRmFLbyaHNowIAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6738586877,
+    "plan": "gold",
+    "crypto": "BTC",
+    "time": "2025-06-12T15:27:13.536Z",
+    "photo": "AgACAgUAAxkBAAIITmhK8c7SE1vWgvceXbrNN6XZQhavAAJKyDEbkQpYVq2jwPIRxsGUAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "ETH",
+    "time": "2025-06-12T15:53:11.574Z",
+    "photo": "AgACAgEAAxkBAAIICGhK6kfW9WRYVC4xfYhUbr6Ion8KAALSrjEbuQpYRmFLbyaHNowIAQADAgADeQADNgQ"
+  },
+  {
+    "user": 8003094426,
+    "plan": "platinum1m",
+    "crypto": "LTC",
+    "time": "2025-06-12T17:58:40.885Z",
+    "photo": "AgACAgUAAxkBAAIIuWhLFU2fWjyzZOVs0uXQQsaYyr3NAALPxjEbehlZVpMWKnEllRWlAQADAgADeAADNgQ"
+  },
+  {
+    "user": 680827992,
+    "plan": "platinum1m",
+    "crypto": "LTC",
+    "time": "2025-06-12T18:07:30.476Z",
+    "photo": "AgACAgEAAxkBAAIIv2hLF18Eexqac94fHE7suq-Pqb5bAAJVtTEbAT5ZRuBFm-7yink8AQADAgADeQADNgQ"
+  },
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-13T03:33:21.370Z",
+    "photo": "AgACAgEAAxkBAAII02hLm_5QqEZuzGMTXaXWt8D3_bUCAAJmrzEbuQpYRs1kCKCK7BXUAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7678584307,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-19T11:22:17.871Z",
+    "photo": "AgACAgEAAxkBAAILwmhT8ufLD9CX39sFgjH2grT_cdd6AALPrTEbeMSgRjflXokHwg7DAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7678584307,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-21T05:43:24.535Z",
+    "photo": "AgACAgEAAxkBAAIMZWhWRnpbg4McFLT-cb0wXoCP346yAAKmtTEbaM-wRsmH6Z580b-LAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7352431620,
+    "plan": "platinum1m",
+    "crypto": "LTC",
+    "time": "2025-06-22T01:24:59.013Z",
+    "photo": "AgACAgEAAxkBAAIMlGhXW2giyBEoYo2h3WcPMHxKFDSjAALrrTEbLea4Ruemi0sunr-oAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6567956867,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-23T02:02:30.625Z",
+    "photo": "AgACAgUAAxkBAAIM3WhYtbOSOgqxLdBKjQ7dP5bhzJIcAAIDwjEbsu_JVlDrCvngqncYAQADAgADeQADNgQ"
+  },
+  {
+    "user": 1337671253,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-23T17:49:49.590Z",
+    "photo": "AgACAgEAAxkBAAINHmhZk7tvzK1AsyGIFgVXSZNkW1u6AAJMtjEbb2_RRoo0BueuL9XjAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6435062086,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-23T20:18:37.877Z",
+    "photo": "AgACAgQAAxkBAAINOGhZtpvjg2kC2fO7-WUMJ1N0J2LwAAKPyjEbXYbIUp025U1vFkUHAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6435062086,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-23T20:29:31.263Z",
+    "photo": "AgACAgQAAxkBAAINPWhZuShNLL59njQ8RMrUI8UqNiQ4AAJiyTEbuAzQUtNGODBRrwgCAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7605877406,
+    "plan": "platinum1m",
+    "crypto": "ETH",
+    "time": "2025-06-23T22:50:48.521Z",
+    "photo": "AgACAgQAAxkBAAINRmhZ2kYCdnjPMwN1FyFTPR8R-MD7AAJ0yDEbRpjQUjpPqJoe9widAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7605877406,
+    "plan": "platinum1m",
+    "crypto": "ETH",
+    "time": "2025-06-23T23:15:39.214Z",
+    "photo": "AgACAgQAAxkBAAINRmhZ2kYCdnjPMwN1FyFTPR8R-MD7AAJ0yDEbRpjQUjpPqJoe9widAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7605877406,
+    "plan": "platinum1m",
+    "crypto": "ETH",
+    "time": "2025-06-23T23:17:20.413Z",
+    "photo": "AgACAgQAAxkBAAINT2hZ4H2ZgUduLmX0eBm2gf-t2IvoAAJ7yDEbRpjQUrYNUBIamn7MAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-06-24T03:37:00.012Z",
+    "photo": "AgACAgUAAxkBAAINamhaHVmbgTLnw-5n_qMD4duxvJ87AALiwTEb36TRVko6IDf4MY7aAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6606759809,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-06-24T03:43:02.877Z",
+    "photo": "AgACAgUAAxkBAAINkmhaHsQMdXy9Zgw0tlejIwtJadqQAAJywzEbTJHQVjRn8pPgKuGiAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7605877406,
+    "plan": "platinum1m",
+    "crypto": "ETH",
+    "time": "2025-06-24T08:12:06.714Z",
+    "photo": "AgACAgQAAxkBAAINT2hZ4H2ZgUduLmX0eBm2gf-t2IvoAAJ7yDEbRpjQUrYNUBIamn7MAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7657547690,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-24T09:38:50.927Z",
+    "photo": "AgACAgQAAxkBAAINsWhacihwAAHujTRE6bKPs05icEATvgACosUxG_-k0FItHLYCHaJG0gEAAwIAA3kAAzYE"
+  },
+  {
+    "user": 7823047708,
+    "plan": "diamond",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-24T14:33:11.089Z",
+    "photo": "AgACAgQAAxkBAAINw2hatyT0bScOcgWCScUK_3bT2JVoAALrxjEbCY_ZUjeC1Nj5tgbcAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7823047708,
+    "plan": "gold",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-24T14:58:09.696Z",
+    "photo": "AgACAgQAAxkBAAINw2hatyT0bScOcgWCScUK_3bT2JVoAALrxjEbCY_ZUjeC1Nj5tgbcAQADAgADeQADNgQ"
+  },
+  {
+    "user": 1738060346,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-24T19:11:14.374Z",
+    "photo": "AgACAgIAAxkBAAIN52ha-E-IXB1PsU57T3SNPRw2U1McAAKh_DEbfqPYSqp2dXa-nyhqAQADAgADeAADNgQ"
+  },
+  {
+    "user": 7678584307,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-06-25T03:30:00.880Z",
+    "photo": "AgACAgEAAxkBAAIOPGhbbTZBN-zpgVeyY0ioeHRRjGYhAALUrTEbVyPZRoXP7kF2GVypAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7678584307,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-25T03:31:09.882Z",
+    "photo": "AgACAgEAAxkBAAIOPGhbbTZBN-zpgVeyY0ioeHRRjGYhAALUrTEbVyPZRoXP7kF2GVypAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7852172556,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-25T07:02:16.178Z",
+    "photo": "AgACAgEAAxkBAAIOfmhbnvWr7XlQmwbY5wVTfyynRRgZAAKZrjEbpGHhRo-mgPF4me_PAQADAgADeAADNgQ"
+  },
+  {
+    "user": 7611028847,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-25T18:03:00.379Z",
+    "photo": "AgACAgEAAxkBAAIOoGhcOdGiifwp41zysiZsxO0yJtBuAAJtsTEbxU7hRpSBQlWc57JDAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6418412515,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-06-26T05:18:10.507Z",
+    "photo": "AgACAgUAAxkBAAIOwGhc2A_CbsykBwTRPGDslsB9xtcGAAI4wzEb0pbpVie1x5M49OyrAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6418412515,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-06-26T05:18:10.535Z",
+    "photo": "AgACAgUAAxkBAAIOwWhc2A8nXVwYaXwfJRaG3ZZIi_JZAALOxjEbVc7pVtLXSIf7n1hkAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6303777962,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-06-28T19:46:00.235Z",
+    "photo": "AgACAgEAAxkBAAIPZGhgRnXPjZcEH0vVBDJj0jewazCIAAKXsDEbtSwAAUdvbANUTPWVqwEAAwIAA3kAAzYE"
+  },
+  {
+    "user": 1067812677,
+    "plan": "diamond",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-06-30T16:08:14.566Z",
+    "photo": "AgACAgEAAxkBAAIQhmhitmyLlaw2tK4JkwUvSG4jMDSqAAJ5rzEbtUkZR-gKMKUJGlO5AQADAgADeQADNgQ"
+  },
+  {
+    "user": 8072876787,
+    "plan": "gold",
+    "crypto": "USDT (ERC20)",
+    "time": "2025-07-02T12:57:54.740Z",
+    "photo": "AgACAgQAAxkBAAIRqGhlLNBYnjsQpWqh5WTksqcOGu32AAIWyDEbdDsoUxnWNZK41GJ-AQADAgADeQADNgQ"
+  },
+  {
+    "user": 6249618409,
+    "plan": "gold",
+    "crypto": "BTC",
+    "time": "2025-07-02T21:23:52.803Z",
+    "photo": "AgACAgQAAxkBAAIRu2hlo2Yn3nrJ6-OXqv-5QJ189uFRAAIDyzEbFxsxU3UE8zwC_7JKAQADAgADeAADNgQ"
+  },
+  {
+    "user": 6249618409,
+    "plan": "gold",
+    "crypto": "ETH",
+    "time": "2025-07-02T21:26:18.546Z",
+    "photo": "AgACAgQAAxkBAAIRv2hlo_jD4UP22pJsEv35VH968aXaAAIFyzEbFxsxUznnMLVDVm5sAQADAgADeAADNgQ"
+  },
+  {
+    "user": 6249618409,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-07-03T09:40:57.702Z",
+    "photo": "AgACAgQAAxkBAAISNmhmUCeZUG0zJWxFkGIXt2HsX0ruAAKGxjEb5qg5U1Hn7ike_j6sAQADAgADeAADNgQ"
+  },
+  {
+    "user": 6249618409,
+    "plan": "platinum1m",
+    "crypto": "ETH",
+    "time": "2025-07-03T10:02:04.055Z",
+    "photo": "AgACAgQAAxkBAAISQmhmVRm5BkLwF0bet0UpSFzQwGTuAAKPxjEb5qg5UzLNAAF_oPdjyAEAAwIAA3gAAzYE"
+  },
+  {
+    "user": 6249618409,
+    "plan": "platinum1m",
+    "crypto": "Solana (SOL)",
+    "time": "2025-07-03T12:35:11.531Z",
+    "photo": "AgACAgQAAxkBAAISSmhmeP3USfjCwMtV0nqmJHcss6LMAALgxjEb5qg5UxNoLTixgLKyAQADAgADdwADNgQ"
+  },
+  {
+    "user": 8003094426,
+    "plan": "platinum1m",
+    "crypto": "XRP (XRP)",
+    "time": "2025-07-04T09:20:38.814Z",
+    "photo": "AgACAgUAAxkBAAISvWhnnOTj-ZkG2IXwljP8XfK9P5TPAALmwjEbEwU5V5z1lq57Ns7wAQADAgADeAADNgQ"
+  },
+  {
+    "user": 1477981397,
+    "plan": "gold",
+    "crypto": "BTC",
+    "time": "2025-07-04T14:12:48.748Z",
+    "photo": "AgACAgQAAxkBAAIWI2hn4V7iqwkMWB7WYqAxqJcJNSK9AAIxyzEbvUxAUx2CBi3OY1V0AQADAgADeQADNgQ"
+  },
+  {
+    "user": 1477981397,
+    "plan": "gold",
+    "crypto": "BTC",
+    "time": "2025-07-04T14:14:19.027Z",
+    "photo": "AgACAgQAAxkBAAIWKWhn4bjhVMKRp66MNr75ztGG0hnLAAIyyzEbvUxAU6zskhsw0_ChAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7384637554,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-07-05T04:45:21.983Z",
+    "photo": "AgACAgEAAxkBAAIWNGhord_KI2wEY_0qbKU8IQpcznOwAALGrjEbiRFJRwdZ6b2KZa8fAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7384637554,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-07-05T13:36:50.746Z",
+    "photo": "AgACAgEAAxkBAAIWRWhpKnDaY3ZEvV72f-F1TFzH4H8IAAImszEbiRFJR6tFqncK3ejjAQADAgADeQADNgQ"
+  },
+  {
+    "user": 6552721168,
+    "plan": "gold",
+    "crypto": "BTC",
+    "time": "2025-07-05T17:49:42.969Z",
+    "photo": "AgACAgEAAxkBAAIYYmhpZbRdwvoa7e6JslWErsn_mq0NAAKFrjEbrqVQRwWMp0NuWkP8AQADAgADeQADNgQ"
+  },
+  {
+    "user": 6552721168,
+    "plan": "gold",
+    "crypto": "BTC",
+    "time": "2025-07-05T18:15:08.336Z",
+    "photo": "AgACAgEAAxkBAAIYYmhpZbRdwvoa7e6JslWErsn_mq0NAAKFrjEbrqVQRwWMp0NuWkP8AQADAgADeQADNgQ"
+  },
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-05T19:27:50.560Z",
+    "photo": "AgACAgEAAxkBAAIYgmhpfLSy34IYG7NonW5FeAml8gkwAAJerjEb3fVRR3CpEvnSvw4BAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-05T19:30:46.995Z",
+    "photo": "AgACAgUAAxkBAAIYiWhpfWSWqigUVsvgg49vGtq5KnrpAAKKxDEbqkVQV3xlJhkNrZHBAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7678584307,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-05T19:31:50.388Z",
+    "photo": "AgACAgEAAxkBAAIYj2hpfaMQ79hDY6DBNU6TjryA7aSUAAKxrjEblGZIR-Ad_f1lIpkDAQADAgADeQADNgQ"
+  },
+  {
+    "user": 8003094426,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-05T20:21:36.387Z",
+    "photo": "AgACAgUAAxkBAAIYn2hpiU3Oelki1_5j39yazzODuJnyAAJSxTEboKtQV3v8SpvYZsexAQADAgADeQADNgQ"
+  },
+  {
+    "user": 8003094426,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-05T20:23:42.710Z",
+    "photo": "AgACAgUAAxkBAAIYpWhpiczqcB4rur_dPg-WTlaxF6rCAAJTxTEboKtQV0S6WF1ghmQBAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "USDT (ERC20)",
+    "time": "2025-07-05T21:12:17.333Z",
+    "photo": "AgACAgEAAxkBAAIYgmhpfLSy34IYG7NonW5FeAml8gkwAAJerjEb3fVRR3CpEvnSvw4BAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7674432576,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-06T08:18:23.837Z",
+    "photo": "AgACAgEAAxkBAAIYwmhqMU2-ENh6jOlfkAqK43PSnV_6AALxsDEb_RxQRyTBj-Vh4p4gAQADAgADeQADNgQ"
+  },
+  {
+    "user": 634713998,
+    "plan": "platinum",
+    "crypto": "BTC",
+    "time": "2025-07-06T11:55:22.497Z",
+    "photo": "AgACAgQAAxkBAAIa4mhqZCiyO3eS5oT8nQT9tK0kf7VGAALeyDEbIuJQU9jChY_pGejpAQADAgADeQADNgQ"
+  },
+  {
+    "user": 634713998,
+    "plan": "platinum",
+    "crypto": "BTC",
+    "time": "2025-07-06T12:11:34.999Z",
+    "photo": "AgACAgQAAxkBAAIa4mhqZCiyO3eS5oT8nQT9tK0kf7VGAALeyDEbIuJQU9jChY_pGejpAQADAgADeQADNgQ"
+  },
+  {
+    "user": 634713998,
+    "plan": "platinum",
+    "crypto": "BTC",
+    "time": "2025-07-06T12:25:35.427Z",
+    "photo": "AgACAgQAAxkBAAIbFGhqazwHEQOdUMoAAbu3GaNjNOy-NAAC9cgxGyLiUFMm2YMBoairHwEAAwIAA3kAAzYE"
+  },
+  {
+    "user": 634713998,
+    "plan": "platinum",
+    "crypto": "BTC",
+    "time": "2025-07-06T12:25:46.385Z",
+    "photo": "AgACAgQAAxkBAAIbGGhqa0cXeWGMbTGXLKv4T73HjGpNAAL2yDEbIuJQU4n0GNnoiSjoAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7183774016,
+    "plan": "diamond",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-07T20:51:58.311Z",
+    "photo": "AgACAgUAAxkBAAIbRWhsM2sw6k7VJKx00drcHAsah0iKAAK1xzEb_iZhV7MGbC80gQ6DAQADAgADeAADNgQ"
+  },
+  {
+    "user": 1843055860,
+    "plan": "platinum1m",
+    "crypto": "USDT(BEP20)",
+    "time": "2025-07-09T06:17:19.181Z",
+    "photo": "AgACAgUAAxkBAAIdlWhuCWxTORu-dlnbHJhIsDbGvaOqAAJaxDEbKg1xV6iUYA_30W1RAQADAgADeQADNgQ"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-07-09T06:20:42.303Z",
+    "photo": "AgACAgUAAxkBAAIdnWhuCjdEbjDBmFtszWG3qXnqA9czAAJuxzEb52txV-EaAAHKtFK1MwEAAwIAA3kAAzYE"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "USDT (ERC20)",
+    "time": "2025-09-28T09:05:36.729Z",
+    "photo": "AgACAgUAAxkBAAIk82jY-l6IOXvqfh1qq6-O2jCcamY9AAJcxjEbsRnIVhJ9mLU4Wtf2AQADAgADeQADNgQ"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-10-28T10:35:41.233Z",
+    "photo": "AgACAgUAAxkBAAIlImkAAZx7EdCmAp8h7x3lhkP-4v8n1AACggxrG8MMAVRXBfTJvvV_lAEAAwIAA3kAAzYE"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-10-28T11:22:17.457Z",
+    "photo": "AgACAgUAAxkBAAIlImkAAZx7EdCmAp8h7x3lhkP-4v8n1AACggxrG8MMAVRXBfTJvvV_lAEAAwIAA3kAAzYE"
+  },
+  {
+    "user": 8003094426,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-10-28T11:46:01.986Z",
+    "photo": "AgACAgUAAxkBAAIlQGkAAaz312Y-bSjVQEccO-TEi6rQWQACdAxrG164CVRe2S7p5dP44wEAAwIAA3kAAzYE"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-10-28T13:26:17.188Z",
+    "photo": "AgACAgUAAxkBAAIlaWkAAcR2pI1HH31lFE8BW23KEC6GygACcQtrG8MMCVRYul40DyaVTAEAAwIAA3gAAzYE"
+  },
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "BTC",
+    "time": "2025-10-28T14:21:19.643Z",
+    "photo": "AgACAgEAAxkBAAIliGkAAdFdIuQ8bQAB9FuZWTPpwYQ47N4AAjkLaxtqIQhEYj2ygTAhgq0BAAMCAAN4AAM2BA"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "Solana (SOL)",
+    "time": "2025-10-28T15:12:19.806Z",
+    "photo": "AgACAgEAAxkBAAIleGkAAcsqoHBoXY68pZCHBPPtGTo_3gACFAtrG1mOCESQ-L-8YdIB2wEAAwIAA3gAAzYE"
+  },
+  {
+    "user": 7183774016,
+    "plan": "platinum1m",
+    "crypto": "Solana (SOL)",
+    "time": "2025-10-28T16:31:19.497Z",
+    "photo": "AgACAgUAAxkBAAIlv2kAAe_VlHzsW7zqFgIetogQ3C4aTQAC3gtrG8MMCVRPqAQGfSdjEwEAAwIAA3gAAzYE"
+  },
+  {
+    "user": 7750698031,
+    "plan": "platinum1m",
+    "crypto": "USDT (TRC20)",
+    "time": "2025-10-28T17:02:43.653Z",
+    "photo": "AgACAgEAAxkBAAIl5WkAAfcxca3sCUqe2hQeWpCp4PIR7wACWAtrG2ohCETDegw-dCgqjgEAAwIAA3gAAzYE"
+  }
+]
