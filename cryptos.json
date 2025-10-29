@@ -1,47 +1,47 @@
 [
   {
     "name": "USDT (TRC20)",
-    "address": "THcpxC6Tzye4vaYxLcP2ufkbhy7XMCVdRc",
+    "address": "TDYjHhdb52YGRL8iZtZ4fyFM3wC6VJJk2F",
     "qrFileId": "AgACAgEAAxkBAAIlzmkAAfR3OTdxwkkExL6Vcz3TaLptzAACLgtrG1mOCETuLc8GnfnacQEAAwIAA3gAAzYE"
   },
   {
     "name": "BTC",
-    "address": "bc1q5clkxvk8u9lgfdkq2njutcd0pmxpe08um4mdyw",
+    "address": "bc1q56p9gtehjzm63642x92nw33v0msgu9r7u8pu0k",
     "qrFileId": "AgACAgEAAxkBAAIl2GkAAfUndCWVXPNUbnZTDxPLsqx7swACMwtrG1mOCETWYmCkx4E4XAEAAwIAA3gAAzYE"
   },
   {
     "name": "ETH",
-    "address": "0x36da8622EBdD7BF9AA6668fb68Ec18870CCCDAAC",
+    "address": "0x41B5dAD12c28691Ae525F776CA6ac395704D129d",
     "qrFileId": "AgACAgEAAxkBAAIl0GkAAfSagrYcia48pU96iAaxTdup8QACLwtrG1mOCEQvg96Ot7yt7QEAAwIAA3gAAzYE"
   },
   {
     "name": "TRX",
-    "address": "THcpxC6Tzye4vaYxLcP2ufkbhy7XMCVdRc",
+    "address": "TDYjHhdb52YGRL8iZtZ4fyFM3wC6VJJk2F",
     "qrFileId": "AgACAgEAAxkBAAIl2mkAAfVLbws0mQWfRIBcLXU2rws7VgACNAtrG1mOCET0ICzbPp6BuQEAAwIAA3gAAzYE"
   },
   {
     "name": "USDT (ERC20)",
-    "address": "0x36da8622EBdD7BF9AA6668fb68Ec18870CCCDAAC",
+    "address": "0x41B5dAD12c28691Ae525F776CA6ac395704D129d",
     "qrFileId": "AgACAgEAAxkBAAIl0mkAAfS52qKjI6Xd1kj9McC8SuB92QACMAtrG1mOCEQMT9B-_CiocwEAAwIAA3gAAzYE"
   },
   {
     "name": "LTC",
-    "address": "ltc1qwumrvhys9nmp7my4pjnzdcepx9zwcwnhnuwxxs",
+    "address": "ltc1quex3lqwhaapxz26hkhygqfumnxwzhd3lxqkueq",
     "qrFileId": "AgACAgEAAxkBAAIl3GkAAfWZuma-PV2D99ofmvwmnQumQAACNQtrG1mOCETx8dnCmanZnAEAAwIAA3gAAzYE"
   },
   {
     "name": "Solana (SOL)",
-    "address": "7hkJe4QF6ricWwp9T2i4Bb1KthjyhGiwyrx4C6DoTSek",
+    "address": "7yr5NHuz4kiye7GFGvgK5VRWsLhVStmXVZURmNkYhHQf",
     "qrFileId": "AgACAgEAAxkBAAIl1GkAAfTf3kwq4jk7CB7u0uZRdCcRIAACMQtrG1mOCESenqoLh1EdMAEAAwIAA3gAAzYE"
   },
   {
     "name": "XRP (XRP)",
-    "address": "rf8nfQ2AZhHiJKkQTeaVqtX3NzckCSbSqV",
+    "address": "rh2zZECbxoDjwMSryPZ1Qq7MNjtE9qpBpA",
     "qrFileId": "AgACAgEAAxkBAAIl3mkAAfb037nzx81dSlzZRMcHoUG9SgACNwtrG1mOCETaiEsZhd_RkAEAAwIAA3gAAzYE"
   },
   {
     "name": "USDT(BEP20)",
-    "address": "0x36da8622EBdD7BF9AA6668fb68Ec18870CCCDAAC",
+    "address": "0x41B5dAD12c28691Ae525F776CA6ac395704D129d",
     "qrFileId": "AgACAgEAAxkBAAIl1mkAAfUDatp4bSL1GPAvW4l56pHP3AACMgtrG1mOCESoUrRjVUPsHgEAAwIAA3gAAzYE"
   }
 ]
