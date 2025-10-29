@@ -14,6 +14,7 @@ const DATA_DIR = path.resolve(__dirname);
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const LOGS_FILE = path.join(DATA_DIR, 'purchase_logs.json');
 const CRYPTOS_FILE = path.join(DATA_DIR, 'cryptos.json');
+const PENDING_APPROVALS_FILE = path.join(DATA_DIR, 'pending_approvals.json');
 
 const OFFICIAL_CHANNEL_LINK = 'https://t.me/+Eg-SFpyzbpM0YzM1';
 const OFFICIAL_WEBSITE = 'https://www.callspoofing.shop';
@@ -42,32 +43,32 @@ function toBoldUnicodeChar(ch) {
 
 function stylizeFullText(text) {
     if (!text || typeof text !== 'string') return text;
-    
+
     // Preserve URLs and code blocks
     const urlRegex = /(https?:\/\/[^\s]+|t\.me\/[^\s]+|@[^\s]+)/g;
     const codeRegex = /(`[^`]+`|```[\s\S]*?```)/g;
-    
+
     const segments = [];
     let lastIndex = 0;
-    
+
     // Find all preserved segments (URLs and code blocks)
     const preserved = [];
     let match;
-    
+
     while ((match = urlRegex.exec(text)) !== null) {
         preserved.push({ type: 'url', content: match[0], index: match.index });
     }
-    
+
     while ((match = codeRegex.exec(text)) !== null) {
         preserved.push({ type: 'code', content: match[0], index: match.index });
     }
-    
+
     // Sort preserved segments by index
     preserved.sort((a, b) => a.index - b.index);
-    
+
     // Process text segment by segment
     let currentIndex = 0;
-    
+
     preserved.forEach(segment => {
         if (segment.index > currentIndex) {
             // Add regular text before preserved segment
@@ -77,16 +78,16 @@ function stylizeFullText(text) {
                 content: Array.from(regularText).map(ch => toBoldUnicodeChar(ch)).join('')
             });
         }
-        
+
         // Add preserved segment as-is
         segments.push({
             type: segment.type,
             content: segment.content
         });
-        
+
         currentIndex = segment.index + segment.content.length;
     });
-    
+
     // Add any remaining regular text
     if (currentIndex < text.length) {
         const remainingText = text.slice(currentIndex);
@@ -95,7 +96,7 @@ function stylizeFullText(text) {
             content: Array.from(remainingText).map(ch => toBoldUnicodeChar(ch)).join('')
         });
     }
-    
+
     return segments.map(s => s.content).join('');
 }
 
@@ -109,7 +110,7 @@ function stylizeLabel(label) {
 }
 
 // ---------- Persistence / in-memory ----------
-const users = new Map(); // chatId -> { lang, plan, crypto, waitingForX... }
+const users = new Map(); // chatId -> { lang, plan, crypto, activePlan, waitingForX... }
 let purchaseLogs = [];
 let cryptos = [
     { name: '𝗨𝗦𝗗𝗧 (𝗧𝗥𝗖𝟮𝟬)', address: 'TYdBx5944hZZUnfoMCNEDy4pKZ17oC4N3a', qrFileId: null },
@@ -123,6 +124,7 @@ let cryptos = [
     { name: '𝗧𝗥𝗫', address: 'TYdBx5944hZZUnfoMCNEDy4pKZ17oC4N3a', qrFileId: null },
     { name: '𝗧𝗢𝗡', address: 'UQCTDuH5udkgZDqvhmhmOHhG7NazA7g85-PUqj63jutnGXBI', qrFileId: null }
 ];
+let pendingApprovals = [];
 
 function loadJSON(file, fallback) {
     try {
@@ -139,11 +141,13 @@ function loadAllData() {
     purchaseLogs = loadJSON(LOGS_FILE, []) || [];
     const c = loadJSON(CRYPTOS_FILE, null);
     if (Array.isArray(c) && c.length) cryptos = c;
+    pendingApprovals = loadJSON(PENDING_APPROVALS_FILE, []) || [];
 }
 
 function saveUsers() { try { fs.writeFileSync(USERS_FILE, JSON.stringify(Array.from(users.entries()), null, 2)); } catch (e) { console.error(e); } }
 function saveLogs() { try { fs.writeFileSync(LOGS_FILE, JSON.stringify(purchaseLogs, null, 2)); } catch (e) { console.error(e); } }
 function saveCryptos() { try { fs.writeFileSync(CRYPTOS_FILE, JSON.stringify(cryptos, null, 2)); } catch (e) { console.error(e); } }
+function savePendingApprovals() { try { fs.writeFileSync(PENDING_APPROVALS_FILE, JSON.stringify(pendingApprovals, null, 2)); } catch (e) { console.error(e); } }
 
 // ---------- Translations (Enhanced with full bold styling) ----------
 const translations = {
@@ -179,7 +183,10 @@ const translations = {
         main_menu: "🏠 𝗠𝗮𝗶𝗻 𝗠𝗲𝗻𝘂",
         select_lang: "🌐 𝗦𝗲𝗹𝗲𝗰𝘁 𝗟𝗮𝗻𝗴𝘂𝗮𝗴𝗲",
         contact_admin: "💬 𝗖𝗼𝗻𝘁𝗮𝗰𝘁 𝗔𝗱𝗺𝗶𝗻",
-        join_channel: "📢 𝗝𝗼𝗶𝗻 𝗖𝗵𝗮𝗻𝗻𝗲𝗹"
+        join_channel: "📢 𝗝𝗼𝗶𝗻 𝗖𝗵𝗮𝗻𝗻𝗲𝗹",
+        pending_approval: "⏳ 𝗬𝗼𝘂𝗿 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝗶𝘀 𝗽𝗲𝗻𝗱𝗶𝗻𝗴 𝗮𝗽𝗽𝗿𝗼𝘃𝗮𝗹. 𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗯𝗲 𝗻𝗼𝘁𝗶𝗳𝗶𝗲𝗱 𝘄𝗵𝗲𝗻 𝗮𝗽𝗽𝗿𝗼𝘃𝗲𝗱.",
+        payment_approved: "✅ 𝗬𝗼𝘂𝗿 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗮𝗽𝗽𝗿𝗼𝘃𝗲𝗱! 𝗬𝗼𝘂𝗿 𝗽𝗹𝗮𝗻 𝗶𝘀 𝗻𝗼𝘄 𝗮𝗰𝘁𝗶𝘃𝗲.",
+        payment_rejected: "❌ 𝗬𝗼𝘂𝗿 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝘄𝗮𝘀 𝗻𝗼𝘁 𝗮𝗽𝗽𝗿𝗼𝘃𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗰𝗼𝗻𝘁𝗮𝗰𝘁 𝗮𝗱𝗺𝗶𝗻 𝗳𝗼𝗿 𝗺𝗼𝗿𝗲 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻."
     },
     fr: {
         welcome: "🌟 𝗕𝗶𝗲𝗻𝘃𝗲𝗻𝘂𝗲 𝗮𝘂𝘅 𝘀𝗲𝗿𝘃𝗶𝗰𝗲𝘀 𝗱𝗲 𝘀𝗽𝗼𝗼𝗳𝗶𝗻𝗴 𝗱'𝗮𝗽𝗽𝗲𝗹!\n𝗖𝗵𝗼𝗶𝘀𝗶𝘀𝘀𝗲𝘇 𝘃𝗼𝘁𝗿𝗲 𝗹𝗮𝗻𝗴𝘂𝗲:",
@@ -201,7 +208,7 @@ const translations = {
         help: `📘 𝗠𝗼𝗱𝗲 𝗱'𝗲𝗺𝗽𝗹𝗼𝗶 :
 
 1. 𝗖𝗵𝗼𝗶𝘀𝗶𝘀𝘀𝗲𝘇 𝘃𝗼𝘁𝗿𝗲 𝗳𝗼𝗿𝗳𝗮𝗶𝘁 𝗱𝗮𝗻𝘀 𝗹𝗲 𝗺𝗲𝗻𝘂 𝗽𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹
-2. 𝗦𝗲́𝗹𝗲𝗰𝘁𝗶𝗼𝗻𝗻𝗲𝘇 𝘂𝗻 𝗺𝗼𝘆𝗲𝗻 𝗱𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗲𝗻 𝗰𝗿𝘆𝗽𝘁𝗼𝗺𝗼𝗻𝗻𝗮𝗶𝗲 (𝗨𝗦𝗗𝗧, 𝗕𝗧𝗖, 𝗘𝗧𝗛, 𝗟𝗧𝗖, 𝗫𝗥𝗣, 𝗦𝗢𝗟, 𝗧𝗥𝗫, 𝗧𝗢𝗡)
+2. 𝗦𝗲́𝗹𝗲𝗰𝘁𝗶𝗼𝗻𝗻𝗲𝘇 𝘂𝗻 𝗺𝗼𝘆𝗲𝗻 𝗱𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗲𝗻 𝗰𝗿𝗶𝗽𝘁𝗼𝗺𝗼𝗻𝗻𝗮𝗶𝗲 (𝗨𝗦𝗗𝗧, 𝗕𝗧𝗖, 𝗘𝗧𝗛, 𝗟𝗧𝗖, 𝗫𝗥𝗣, 𝗦𝗢𝗟, 𝗧𝗥𝗫, 𝗧𝗢𝗡)
 3. 𝗘𝗻𝘃𝗼𝘆𝗲𝘇 𝗹𝗲 𝗺𝗼𝗻𝘁𝗮𝗻𝘁 𝗲𝘅𝗮𝗰𝘁 𝗮̀ 𝗹'𝗮𝗱𝗿𝗲𝘀𝘀𝗲 𝗳𝗼𝘂𝗿𝗻𝗶𝗲
 4. 𝗖𝗹𝗶𝗾𝘂𝗲𝘇 𝘀𝘂𝗿 "𝗝'𝗮𝗶 𝗣𝗮𝘆𝗲́" 𝗲𝘁 𝘁𝗲́𝗹𝗲́𝗰𝗵𝗮𝗿𝗴𝗲𝘇 𝘃𝗼𝘁𝗿𝗲 𝗰𝗮𝗽𝘁𝘂𝗿𝗲 𝗱'𝗲́𝗰𝗿𝗮𝗻
 5. ⏳ 𝗩𝗼𝘀 𝗶𝗱𝗲𝗻𝘁𝗶𝗳𝗶𝗮𝗻𝘁𝘀 𝘀𝗲𝗿𝗼𝗻𝘁 𝗲𝗻𝘃𝗼𝘆𝗲́𝘀 𝗱𝗮𝗻𝘀 𝗹𝗲𝘀 𝟭𝟬 𝗺𝗶𝗻𝘂𝘁𝗲𝘀
@@ -213,7 +220,10 @@ const translations = {
         main_menu: "🏠 𝗠𝗲𝗻𝘂 𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹",
         select_lang: "🌐 𝗖𝗵𝗼𝗶𝘀𝗶𝗿 𝗹𝗮 𝗹𝗮𝗻𝗴𝘂𝗲",
         contact_admin: "💬 𝗖𝗼𝗻𝘁𝗮𝗰𝘁𝗲𝗿 𝗹'𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝘁𝗲𝘂𝗿",
-        join_channel: "📢 𝗥𝗲𝗷𝗼𝗶𝗻𝗱𝗿𝗲 𝗹𝗮 𝗰𝗵𝗮𝗶̂𝗻𝗲"
+        join_channel: "📢 𝗥𝗲𝗷𝗼𝗶𝗻𝗱𝗿𝗲 𝗹𝗮 𝗰𝗵𝗮𝗶̂𝗻𝗲",
+        pending_approval: "⏳ 𝗩𝗼𝘁𝗿𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗲𝘀𝘁 𝗲𝗻 𝗮𝘁𝘁𝗲𝗻𝘁𝗲 𝗱'𝗮𝗽𝗽𝗿𝗼𝗯𝗮𝘁𝗶𝗼𝗻. 𝗩𝗼𝘂𝘀 𝘀𝗲𝗿𝗲𝘇 𝗻𝗼𝘁𝗶𝗳𝗶𝗲́(𝗲) 𝗾𝘂𝗮𝗻𝗱 𝗮𝗽𝗽𝗿𝗼𝘂𝘃𝗲́.",
+        payment_approved: "✅ 𝗩𝗼𝘁𝗿𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗮 𝗲́𝘁𝗲́ 𝗮𝗽𝗽𝗿𝗼𝘂𝘃𝗲́! 𝗩𝗼𝘁𝗿𝗲 𝗳𝗼𝗿𝗳𝗮𝗶𝘁 𝗲𝘀𝘁 𝗺𝗮𝗶𝗻𝘁𝗲𝗻𝗮𝗻𝘁 𝗮𝗰𝘁𝗶𝗳.",
+        payment_rejected: "❌ 𝗩𝗼𝘁𝗿𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗻'𝗮 𝗽𝗮𝘀 𝗲́𝘁𝗲́ 𝗮𝗽𝗽𝗿𝗼𝘂𝘃𝗲́. 𝗩𝗲𝘂𝗶𝗹𝗹𝗲𝘇 𝗰𝗼𝗻𝘁𝗮𝗰𝘁𝗲𝗿 𝗹'𝗮𝗱𝗺𝗶𝗻 𝗽𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱'𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻𝘀."
     },
     de: {
         welcome: "🌟 𝗪𝗶𝗹𝗹𝗸𝗼𝗺𝗺𝗲𝗻 𝗯𝗲𝗶 𝗖𝗮𝗹𝗹 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴 𝗗𝗶𝗲𝗻𝘀𝘁𝗲𝗻!\n𝗪𝗮̈𝗵𝗹𝗲𝗻 𝗦𝗶𝗲 𝗜𝗵𝗿𝗲 𝗦𝗽𝗿𝗮𝗰𝗵𝗲:",
@@ -247,7 +257,10 @@ const translations = {
         main_menu: "🏠 𝗛𝗮𝘂𝗽𝘁𝗺𝗲𝗻𝘂̈",
         select_lang: "🌐 𝗦𝗽𝗿𝗮𝗰𝗵𝗲 𝗮𝘂𝘀𝘄𝗮̈𝗵𝗹𝗲𝗻",
         contact_admin: "💬 𝗔𝗱𝗺𝗶𝗻 𝗸𝗼𝗻𝘁𝗮𝗸𝘁𝗶𝗲𝗿𝗲𝗻",
-        join_channel: "📢 𝗞𝗮𝗻𝗮𝗹 𝗯𝗲𝗶𝘁𝗿𝗲𝘁𝗲𝗻"
+        join_channel: "📢 𝗞𝗮𝗻𝗮𝗹 𝗯𝗲𝗶𝘁𝗿𝗲𝘁𝗲𝗻",
+        pending_approval: "⏳ 𝗜𝗵𝗿𝗲 𝗭𝗮𝗵𝗹𝘂𝗻𝗴 𝘄𝗶𝗿𝗱 𝗴𝗲𝗽𝗿𝘂̈𝗳𝘁. 𝗦𝗶𝗲 𝘄𝗲𝗿𝗱𝗲𝗻 𝗯𝗲𝗻𝗮𝗰𝗵𝗿𝗶𝗰𝗵𝘁𝗶𝗴𝘁, 𝘄𝗲𝗻𝗻 𝘀𝗶𝗲 𝗴𝗲𝗻𝗲𝗵𝗺𝗶𝗴𝘁 𝘄𝗶𝗿𝗱.",
+        payment_approved: "✅ 𝗜𝗵𝗿𝗲 𝗭𝗮𝗵𝗹𝘂𝗻𝗴 𝘄𝘂𝗿𝗱𝗲 𝗴𝗲𝗻𝗲𝗵𝗺𝗶𝗴𝘁! 𝗜𝗵𝗿 𝗧𝗮𝗿𝗶𝗳 𝗶𝘀𝘁 𝗷𝗲𝘁𝘇𝘁 𝗮𝗸𝘁𝗶𝘃.",
+        payment_rejected: "❌ 𝗜𝗵𝗿𝗲 𝗭𝗮𝗵𝗹𝘂𝗻𝗴 𝘄𝘂𝗿𝗱𝗲 𝗻𝗶𝗰𝗵𝘁 𝗴𝗲𝗻𝗲𝗵𝗺𝗶𝗴𝘁. 𝗕𝗶𝘁𝘁𝗲 𝗸𝗼𝗻𝘁𝗮𝗸𝘁𝗶𝗲𝗿𝗲𝗻 𝗦𝗶𝗲 𝗱𝗲𝗻 𝗔𝗱𝗺𝗶𝗻 𝗳𝘂̈𝗿 𝘄𝗲𝗶𝘁𝗲𝗿𝗲 𝗜𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻𝗲𝗻."
     },
     es: {
         welcome: "🌟 𝗕𝗶𝗲𝗻𝘃𝗲𝗻𝗶𝗱𝗼 𝗮 𝗹𝗼𝘀 𝘀𝗲𝗿𝘃𝗶𝗰𝗶𝗼𝘀 𝗱𝗲 𝗹𝗹𝗮𝗺𝗮𝗱𝗮𝘀 𝗳𝗮𝗹𝘀𝗶𝗳𝗶𝗰𝗮𝗱𝗮𝘀!\n𝗘𝗹𝗶𝗷𝗮 𝘀𝘂 𝗶𝗱𝗶𝗼𝗺𝗮:",
@@ -281,7 +294,10 @@ const translations = {
         main_menu: "🏠 𝗠𝗲𝗻𝘂́ 𝗣𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹",
         select_lang: "🌐 𝗦𝗲𝗹𝗲𝗰𝗰𝗶𝗼𝗻𝗮𝗿 𝗜𝗱𝗶𝗼𝗺𝗮",
         contact_admin: "💬 𝗖𝗼𝗻𝘁𝗮𝗰𝘁𝗮𝗿 𝗮𝗹 𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝗱𝗼𝗿",
-        join_channel: "📢 𝗨𝗻𝗶𝗿𝘀𝗲 𝗮𝗹 𝗖𝗮𝗻𝗮𝗹"
+        join_channel: "📢 𝗨𝗻𝗶𝗿𝘀𝗲 𝗮𝗹 𝗖𝗮𝗻𝗮𝗹",
+        pending_approval: "⏳ 𝗦𝘂 𝗽𝗮𝗴𝗼 𝗲𝘀𝘁𝗮́ 𝗽𝗲𝗻𝗱𝗶𝗲𝗻𝘁𝗲 𝗱𝗲 𝗮𝗽𝗽𝗿𝗼𝗯𝗮𝗰𝗶𝗼́𝗻. 𝗦𝗲𝗿𝗮́ 𝗻𝗼𝘁𝗶𝗳𝗶𝗰𝗮𝗱𝗼 𝗰𝘂𝗮𝗻𝗱𝗼 𝘀𝗲 𝗮𝗽𝗿𝘂𝗲𝗯𝗲.",
+        payment_approved: "✅ 𝗦𝘂 𝗽𝗮𝗴𝗼 𝗵𝗮 𝘀𝗶𝗱𝗼 𝗮𝗽𝗿𝗼𝗯𝗮𝗱𝗼! 𝗦𝘂 𝗽𝗹𝗮𝗻 𝗲𝘀𝘁𝗮́ 𝗮𝗰𝘁𝗶𝘃𝗼 𝗮𝗵𝗼𝗿𝗮.",
+        payment_rejected: "❌ 𝗦𝘂 𝗽𝗮𝗴𝗼 𝗻𝗼 𝗳𝘂𝗲 𝗮𝗽𝗿𝗼𝗯𝗮𝗱𝗼. 𝗣𝗼𝗿 𝗳𝗮𝘃𝗼𝗿 𝗰𝗼𝗻𝘁𝗮𝗰𝘁𝗲 𝗮𝗹 𝗮𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝗱𝗼𝗿 𝗽𝗮𝗿𝗮 𝗺𝗮́𝘀 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝗰𝗶𝗼́𝗻."
     },
     ru: {
         welcome: "🌟 𝗗𝗼𝗯𝗿𝗼 𝗽𝗼𝗷𝗮𝗹𝗼𝘃𝗮𝘁𝗻 𝘃 𝗦𝗲𝗿𝘃𝗶𝘀 𝗦𝗽𝘂𝗳𝗶𝗻𝗴𝗮 𝗭𝘃𝗼𝗻𝗸𝗼𝘃!\n𝗩𝘆𝗯𝗲𝗿𝗶𝘁𝗲 𝘀𝘃𝗼𝗶̆ 𝘆𝗮𝘇𝘆𝗸:",
@@ -306,7 +322,7 @@ const translations = {
 2. 𝗩𝘆𝗯𝗲𝗿𝗶𝘁𝗲 𝘀𝗽𝗼𝘀𝗼𝗯 𝗸𝗿𝗶𝗽𝘁𝗼𝗽𝗹𝗮𝘁𝗲𝘇𝗵𝗮 (𝗨𝗦𝗗𝗧, 𝗕𝗧𝗖, 𝗘𝗧𝗛, 𝗟𝗧𝗖, 𝗫𝗥𝗣, 𝗦𝗢𝗟, 𝗧𝗥𝗫, 𝗧𝗢𝗡)
 3. 𝗢𝘁𝗽𝗿𝗮𝘃𝘁𝗲 𝘁𝗼𝗰𝗵𝗻𝘂𝘆𝘂 𝘀𝘂𝗺𝗺𝘂 𝗻𝗮 𝗽𝗿𝗲𝗱𝗼𝘀𝘁𝗮𝘃𝗹𝗲𝗻𝗻𝘆𝗶̆ 𝗮𝗱𝗿𝗲𝘀
 4. 𝗡𝗮𝗵𝗺𝗶𝘁𝗲 '𝗬𝗮 𝗢𝗽𝗹𝗮𝘁𝗶𝗹(𝗮)' 𝗶 𝗭𝗮𝗴𝗿𝘂𝘇𝗶𝘁𝗲 𝘀𝗸𝗿𝗶𝗻𝘀𝗵𝗼𝘁
-5. ⏳ 𝗩𝗮𝘀𝗵𝗶 𝗱𝗮𝗻𝗻𝘆𝗲 𝗯𝘂𝗱𝘂𝘁 𝗼𝘁𝗽𝗿𝗮𝘃𝗹𝗲𝗻𝘆 𝗶𝗻𝗮 𝗽𝗿𝗲𝗱𝗲𝗹𝗮𝘅 𝟭𝟬 𝗺𝗶𝗻𝘂𝘁
+5. ⏳ 𝗩𝗮𝘀𝗵𝗶 𝗱𝗮𝗻𝗻𝘆𝗲 𝗯𝘂𝗱𝘂𝘁 𝗼𝘁𝗽𝗿𝗮𝘃𝗹𝗲𝗻𝘆 𝗶𝗻 𝗽𝗿𝗲𝗱𝗲𝗹𝗮𝘅 𝟭𝟬 𝗺𝗶𝗻𝘂𝘁
 
 📌 𝗣𝗼𝗱𝗱𝗲𝗿𝘇𝗵𝗸𝗮: 𝗞𝗼𝗻𝘁𝗮𝗸𝘁 ${ADMIN_CONTACT}
 📢 𝗢𝗯𝗻𝗼𝘃𝗹𝗲𝗻𝗶𝘆𝗮 & 𝗗𝗲𝗺𝗼-𝗞𝗮𝗻𝗮𝗹: ${OFFICIAL_CHANNEL_LINK}
@@ -315,7 +331,10 @@ const translations = {
         main_menu: "🏠 𝗚𝗹𝗮𝘃𝗻𝗼𝗲 𝗠𝗲𝗻𝘆𝘂",
         select_lang: "🌐 𝗩𝘆𝗯𝗿𝗮𝘁𝗻 𝗬𝗮𝘇𝘆𝗸",
         contact_admin: "💬 𝗦𝘃𝘆𝗮𝘇𝗮𝘁𝗻𝘀𝘆𝗮 𝗦 𝗔𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝘁𝗼𝗿𝗼𝗺",
-        join_channel: "📢 𝗣𝗿𝗶𝘀𝗼𝗲𝗱𝗶𝗻𝗶𝘁𝗻𝘀𝘆𝗮 𝗞 𝗞𝗮𝗻𝗮𝗹𝘂"
+        join_channel: "📢 𝗣𝗿𝗶𝘀𝗼𝗲𝗱𝗶𝗻𝗶𝘁𝗻𝘀𝘆𝗮 𝗞 𝗞𝗮𝗻𝗮𝗹𝘂",
+        pending_approval: "⏳ 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝘁𝗲𝘇𝗵 𝗼𝗷𝗶𝗱𝗮𝗲𝘁 𝗽𝗼𝗱𝘁𝘃𝗲𝗿𝘇𝗵𝗱𝗲𝗻𝗶𝗷𝗮. 𝗩𝘆 𝗯𝘂𝗱𝗲𝘁𝗲 𝘂𝘃𝗲𝗱𝗼𝗺𝗹𝗲𝗻𝘆, 𝗸𝗼𝗴𝗱𝗮 𝗼𝗻 𝗯𝘂𝗱𝗲𝘁 𝗼𝗱𝗼𝗯𝗿𝗲𝗻.",
+        payment_approved: "✅ 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝘁𝗲𝘇𝗵 𝗼𝗱𝗼𝗯𝗿𝗲𝗻! 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝗻 𝘁𝗲𝗽𝗲𝗿𝗻 𝗮𝗸𝘁𝗶𝘃𝗲𝗻.",
+        payment_rejected: "❌ 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝘁𝗲𝘇𝗵 𝗻𝗲 𝗯𝘆𝗹 𝗼𝗱𝗼𝗯𝗿𝗲𝗻. 𝗣𝗼𝗷𝗮𝗹𝘂𝗶̆𝘀𝘁𝗮, 𝘀𝘃𝘆𝗮𝘇𝗵𝗶𝘁𝗲𝘀𝗻 𝘀 𝗮𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝘁𝗼𝗿𝗼𝗺 𝗱𝗹𝗷𝗮 𝗽𝗼𝗹𝘂𝗰𝗵𝗲𝗻𝗶𝗷𝗮 𝗱𝗼𝗽𝗼𝗹𝗻𝗶𝘁𝗲𝗹𝗻𝗼𝗶̆ 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝗰𝗶𝗶."
     }
 };
 
@@ -370,6 +389,11 @@ function getPlans(chatId) {
     return plansData[lang] || plansData.en;
 }
 
+function getPlanName(chatId, planId) {
+    const plan = getPlans(chatId).find(p => p.id === planId);
+    return plan ? plan.name : 'None';
+}
+
 // ---------- Enhanced Keyboard builders ----------
 function getLangKeyboard() {
     return {
@@ -386,25 +410,25 @@ function getLangKeyboard() {
 function getMainMenuKeyboard(chatId) {
     const plans = getPlans(chatId);
     const rows = [];
-    
+
     // Each plan in its own row (vertical layout)
     plans.forEach(plan => {
         rows.push([{ text: plan.name, callback_data: `plan_${plan.id}` }]);
     });
-    
+
     // Additional buttons
     rows.push([{ text: t(chatId, 'demo_video'), callback_data: 'demo_video' }]);
     rows.push([
         { text: t(chatId, 'select_lang'), callback_data: 'select_lang' },
         { text: '❓ 𝗛𝗲𝗹𝗽', callback_data: 'help' }
     ]);
-    
+
     return { inline_keyboard: rows };
 }
 
 function getCryptoKeyboard(chatId) {
     const rows = [];
-    
+
     // Add cryptos in rows of 2 for better layout
     for (let i = 0; i < cryptos.length; i += 2) {
         const row = [];
@@ -412,7 +436,7 @@ function getCryptoKeyboard(chatId) {
         if (cryptos[i + 1]) row.push({ text: cryptos[i + 1].name, callback_data: `crypto_${cryptos[i + 1].name}` });
         rows.push(row);
     }
-    
+
     rows.push([{ text: t(chatId, 'back'), callback_data: 'main_menu' }]);
     return { inline_keyboard: rows };
 }
@@ -453,7 +477,7 @@ function getAdminKeyboard(chatId) {
 
 function getCryptoSelectionKeyboard(action) {
     const rows = [];
-    
+
     // Add cryptos in rows of 2 for better layout
     for (let i = 0; i < cryptos.length; i += 2) {
         const row = [];
@@ -461,8 +485,8 @@ function getCryptoSelectionKeyboard(action) {
         if (cryptos[i + 1]) row.push({ text: cryptos[i + 1].name, callback_data: `${action}_${cryptos[i + 1].name}` });
         rows.push(row);
     }
-    
-    rows.push([{ text: '🔙 𝗕𝗮𝗰𝗸', callback_data: 'main_menu' }]);
+
+    rows.push([{ text: '🔙 𝗕𝗮𝗰𝗸', callback_data: 'admin_panel' }]);
     return { inline_keyboard: rows };
 }
 
@@ -484,6 +508,17 @@ function getBackToMainKeyboard(chatId) {
     return { inline_keyboard: [[{ text: t(chatId, 'main_menu'), callback_data: 'main_menu' }]] };
 }
 
+function getApprovalKeyboard(pendingIndex) {
+    return {
+        inline_keyboard: [
+            [
+                { text: '✅ 𝗔𝗽𝗽𝗿𝗼𝘃𝗲', callback_data: `approve_${pendingIndex}` },
+                { text: '❌ 𝗥𝗲𝗷𝗲𝗰𝘁', callback_data: `reject_${pendingIndex}` }
+            ]
+        ]
+    };
+}
+
 // ---------- UX helpers ----------
 function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
 
@@ -498,7 +533,12 @@ async function sendAnimatedWelcome(chatId) {
         await delay(450);
         await bot.telegram.editMessageText(chatId, msg.message_id, undefined, '🌟 𝗥𝗲𝗮𝗱𝘆!');
         await delay(300);
-        await bot.telegram.editMessageText(chatId, msg.message_id, undefined, t(chatId, 'welcome'), { 
+        
+        const user = users.get(chatId) || {};
+        const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
+        const welcomeText = `${t(chatId, 'welcome')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
+        
+        await bot.telegram.editMessageText(chatId, msg.message_id, undefined, welcomeText, { 
             reply_markup: getLangKeyboard(),
             parse_mode: 'Markdown'
         });
@@ -521,6 +561,21 @@ async function sendAnimatedAdminPanel(chatId) {
     } catch (e) {}
 }
 
+async function sendMainMenu(chatId) {
+    const user = users.get(chatId) || {};
+    const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
+    const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
+    
+    try {
+        await bot.telegram.sendMessage(chatId, menuText, {
+            reply_markup: getMainMenuKeyboard(chatId),
+            parse_mode: 'Markdown'
+        });
+    } catch (e) {
+        console.error('Error sending main menu:', e);
+    }
+}
+
 // ---------- Handlers: /start ----------
 bot.start(async (ctx) => {
     const chatId = ctx.chat.id;
@@ -539,7 +594,7 @@ bot.start(async (ctx) => {
 bot.on('callback_query', async (ctx) => {
     const chatId = ctx.update.callback_query.message.chat.id;
     const data = ctx.update.callback_query.data;
-    
+
     try {
         // Language change
         if (data.startsWith('lang_')) {
@@ -549,14 +604,19 @@ bot.on('callback_query', async (ctx) => {
             users.set(chatId, u); 
             saveUsers();
             await ctx.answerCbQuery();
-            
+
             try {
                 await ctx.telegram.sendChatAction(chatId, 'typing');
                 await ctx.editMessageText('🔄 𝗖𝗵𝗮𝗻𝗴𝗶𝗻𝗴 𝗹𝗮𝗻𝗴𝘂𝗮𝗴𝗲...');
                 await delay(500);
                 await ctx.editMessageText('✅ 𝗟𝗮𝗻𝗴𝘂𝗮𝗴𝗲 𝘂𝗽𝗱𝗮𝘁𝗲𝗱!');
                 await delay(350);
-                await ctx.editMessageText(t(chatId, 'language_set'), { 
+                
+                const user = users.get(chatId) || {};
+                const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
+                const welcomeText = `${t(chatId, 'language_set')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
+                
+                await ctx.editMessageText(welcomeText, { 
                     reply_markup: getMainMenuKeyboard(chatId), 
                     parse_mode: 'Markdown' 
                 });
@@ -571,13 +631,36 @@ bot.on('callback_query', async (ctx) => {
                 await sendAnimatedAdminPanel(chatId); 
             } else { 
                 try { 
-                    await ctx.editMessageText(t(chatId, 'choose_plan'), { 
+                    const user = users.get(chatId) || {};
+                    const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
+                    const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
+                    
+                    await ctx.editMessageText(menuText, { 
                         reply_markup: getMainMenuKeyboard(chatId), 
                         parse_mode: 'Markdown' 
                     }); 
-                } catch(e) {} 
+                } catch(e) {
+                    // If editing fails, send a new message
+                    const user = users.get(chatId) || {};
+                    const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
+                    const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
+                    
+                    await ctx.telegram.sendMessage(chatId, menuText, {
+                        reply_markup: getMainMenuKeyboard(chatId),
+                        parse_mode: 'Markdown'
+                    });
+                } 
             } 
             return; 
+        }
+
+        // Admin panel
+        if (data === 'admin_panel') {
+            await ctx.answerCbQuery();
+            if (chatId === ADMIN_ID) {
+                await sendAnimatedAdminPanel(chatId);
+            }
+            return;
         }
 
         // Plan selection
@@ -590,7 +673,7 @@ bot.on('callback_query', async (ctx) => {
                 users.set(chatId, u);
                 saveUsers();
                 await ctx.answerCbQuery();
-                
+
                 try {
                     await ctx.editMessageText('📋 𝗟𝗼𝗮𝗱𝗶𝗻𝗴 𝗽𝗹𝗮𝗻 𝗱𝗲𝘁𝗮𝗶𝗹𝘀...');
                     await delay(450);
@@ -621,18 +704,18 @@ bot.on('callback_query', async (ctx) => {
                 users.set(chatId, u);
                 saveUsers();
                 await ctx.answerCbQuery();
-                
+
                 try {
                     await ctx.editMessageText('🔐 𝗚𝗲𝗻𝗲𝗿𝗮𝘁𝗶𝗻𝗴 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝗮𝗱𝗱𝗿𝗲𝘀𝘀...');
                     await delay(520);
                     await ctx.editMessageText('💳 𝗣𝗿𝗲𝗽𝗮𝗿𝗶𝗻𝗴 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝗶𝗻𝘀𝘁𝗿𝘂𝗰𝘁𝗶𝗼𝗻𝘀...');
                     await delay(400);
-                    
+
                     let instr = t(chatId, 'payment_instruction', {
                         method: crypto.name,
                         address: crypto.address
                     });
-                    
+
                     // If QR code exists, send it with the payment instructions
                     if (crypto.qrFileId) {
                         try {
@@ -641,7 +724,7 @@ bot.on('callback_query', async (ctx) => {
                                 caption: `📊 𝗤𝗥 𝗖𝗼𝗱𝗲 𝗳𝗼𝗿 ${crypto.name}`,
                                 parse_mode: 'Markdown'
                             });
-                            
+
                             // Then send payment instructions with buttons
                             await ctx.telegram.sendMessage(chatId, instr, {
                                 parse_mode: 'Markdown',
@@ -850,9 +933,89 @@ bot.on('callback_query', async (ctx) => {
                         console.error('Error in remove_qr:', e);
                     }
                 }
+            } else if (data.startsWith('approve_')) {
+                const index = parseInt(data.replace('approve_', ''));
+                const approval = pendingApprovals[index];
+                if (approval) {
+                    await ctx.answerCbQuery('✅ 𝗔𝗽𝗽𝗿𝗼𝘃𝗶𝗻𝗴...');
+                    
+                    // Remove from pending approvals
+                    pendingApprovals.splice(index, 1);
+                    savePendingApprovals();
+                    
+                    // Activate plan for user
+                    const user = users.get(approval.userId);
+                    if (user) {
+                        user.activePlan = approval.plan;
+                        users.set(approval.userId, user);
+                        saveUsers();
+                    }
+                    
+                    // Notify user
+                    try {
+                        await bot.telegram.sendMessage(approval.userId, t(approval.userId, 'payment_approved'), {
+                            parse_mode: 'Markdown'
+                        });
+                        
+                        // Send updated main menu to user
+                        const userUpdated = users.get(approval.userId) || {};
+                        const activePlan = userUpdated.activePlan ? getPlanName(approval.userId, userUpdated.activePlan) : 'None';
+                        const menuText = `${t(approval.userId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${approval.userId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
+                        
+                        await bot.telegram.sendMessage(approval.userId, menuText, {
+                            reply_markup: getMainMenuKeyboard(approval.userId),
+                            parse_mode: 'Markdown'
+                        });
+                    } catch (e) {
+                        console.error('Error notifying user:', e);
+                    }
+                    
+                    try {
+                        // Edit the admin message to show approved
+                        await ctx.editMessageCaption({
+                            caption: `✅ 𝗣𝗮𝘆𝗺𝗲𝗻𝘁 𝗔𝗽𝗽𝗿𝗼𝘃𝗲𝗱\n\n👤 𝗨𝘀𝗲𝗿: ${approval.userId}\n📦 𝗣𝗹𝗮𝗻: ${getPlanName(approval.userId, approval.plan)}\n💰 𝗖𝗿𝘆𝗽𝘁𝗼: ${approval.crypto}\n⏰ 𝗧𝗶𝗺𝗲: ${new Date(approval.time).toLocaleString()}`,
+                            parse_mode: 'Markdown'
+                        });
+                        // Remove the buttons
+                        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+                    } catch(e) {
+                        console.error('Error editing admin message:', e);
+                    }
+                }
+            } else if (data.startsWith('reject_')) {
+                const index = parseInt(data.replace('reject_', ''));
+                const approval = pendingApprovals[index];
+                if (approval) {
+                    await ctx.answerCbQuery('❌ 𝗥𝗲𝗷𝗲𝗰𝘁𝗶𝗻𝗴...');
+                    
+                    // Remove from pending approvals
+                    pendingApprovals.splice(index, 1);
+                    savePendingApprovals();
+                    
+                    // Notify user
+                    try {
+                        await bot.telegram.sendMessage(approval.userId, t(approval.userId, 'payment_rejected'), {
+                            parse_mode: 'Markdown'
+                        });
+                    } catch (e) {
+                        console.error('Error notifying user:', e);
+                    }
+                    
+                    try {
+                        // Edit the admin message to show rejected
+                        await ctx.editMessageCaption({
+                            caption: `❌ 𝗣𝗮𝘆𝗺𝗲𝗻𝘁 𝗥𝗲𝗷𝗲𝗰𝘁𝗲𝗱\n\n👤 𝗨𝘀𝗲𝗿: ${approval.userId}\n📦 𝗣𝗹𝗮𝗻: ${getPlanName(approval.userId, approval.plan)}\n💰 𝗖𝗿𝘆𝗽𝘁𝗼: ${approval.crypto}\n⏰ 𝗧𝗶𝗺𝗲: ${new Date(approval.time).toLocaleString()}`,
+                            parse_mode: 'Markdown'
+                        });
+                        // Remove the buttons
+                        await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+                    } catch(e) {
+                        console.error('Error editing admin message:', e);
+                    }
+                }
             }
         }
-        
+
         await ctx.answerCbQuery();
     } catch (err) {
         console.error('❌ Callback query handler error', err);
@@ -874,15 +1037,15 @@ bot.on('message', async (ctx) => {
         const status = await bot.telegram.sendMessage(chatId, '📡 𝗣𝗿𝗲𝗽𝗮𝗿𝗶𝗻𝗴 𝗯𝗿𝗼𝗮𝗱𝗰𝗮𝘀𝘁...');
         await delay(500);
         await bot.telegram.editMessageText(chatId, status.message_id, undefined, '📤 𝗦𝗲𝗻𝗱𝗶𝗻𝗴 𝘁𝗼 𝘂𝘀𝗲𝗿𝘀...').catch(()=>{});
-        
+
         const broadcastMessage = ctx.message.text;
         user.waitingForBroadcast = false; 
         users.set(chatId, user); 
         saveUsers();
-        
+
         let sent = 0;
         let failed = 0;
-        
+
         // Send to all users
         for (const [uid, userData] of users.entries()) {
             if (uid !== ADMIN_ID) {
@@ -895,7 +1058,7 @@ bot.on('message', async (ctx) => {
                 }
             }
         }
-        
+
         setTimeout(async () => {
             await bot.telegram.editMessageText(chatId, status.message_id, undefined, 
                 `✅ 𝗕𝗿𝗼𝗮𝗱𝗰𝗮𝘀𝘁 𝗰𝗼𝗺𝗽𝗹𝗲𝘁𝗲𝗱!\n📊 𝗦𝗲𝗻𝘁 𝘁𝗼 ${sent} 𝘂𝘀𝗲𝗿𝘀\n❌ 𝗙𝗮𝗶𝗹𝗲𝗱: ${failed}`).catch(()=>{});
@@ -984,7 +1147,7 @@ bot.on('message', async (ctx) => {
             user.waitingForQrCode = false;
             users.set(chatId, user);
             saveUsers();
-            
+
             await ctx.reply(`✅ 𝗤𝗥 𝗰𝗼𝗱𝗲 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗮𝗱𝗱𝗲𝗱 𝗳𝗼𝗿: ${cryptoName}`, {
                 reply_markup: getAdminKeyboard(chatId)
             });
@@ -1001,34 +1164,52 @@ bot.on('message', async (ctx) => {
         await bot.telegram.editMessageText(chatId, proc.message_id, undefined, '📋 𝗟𝗼𝗴𝗴𝗶𝗻𝗴 𝗽𝘂𝗿𝗰𝗵𝗮𝘀𝗲 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻...').catch(()=>{});
 
         const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
-        purchaseLogs.push({ 
-            user: chatId, 
+        
+        // Add to pending approvals instead of directly activating
+        const pendingIndex = pendingApprovals.length;
+        pendingApprovals.push({ 
+            userId: chatId, 
             plan: user.plan, 
             crypto: user.crypto, 
             time: new Date().toISOString(), 
             photo: fileId 
         }); 
+        savePendingApprovals();
+
+        purchaseLogs.push({ 
+            user: chatId, 
+            plan: user.plan, 
+            crypto: user.crypto, 
+            time: new Date().toISOString(), 
+            photo: fileId,
+            status: 'pending'
+        }); 
         saveLogs();
 
-        // Notify admin
+        // Notify admin with approve/reject buttons
         try {
             const planObj = getPlans(chatId).find(p => p.id === user.plan);
             const planName = planObj ? planObj.name : user.plan;
+            const caption = `⏳ 𝗡𝗲𝘄 𝗣𝗮𝘆𝗺𝗲𝗻𝘁 𝗣𝗲𝗻𝗱𝗶𝗻𝗴 𝗔𝗽𝗽𝗿𝗼𝘃𝗮𝗹!\n\n👤 𝗨𝘀𝗲𝗿: ${chatId}\n📦 𝗣𝗹𝗮𝗻: ${planName}\n💰 𝗖𝗿𝘆𝗽𝘁𝗼: ${user.crypto}\n⏰ 𝗧𝗶𝗺𝗲: ${new Date().toLocaleString()}`;
+
             await bot.telegram.sendPhoto(ADMIN_ID, fileId, { 
-                caption: `💳 𝗡𝗲𝘄 𝗣𝗮𝘆𝗺𝗲𝗻𝘁 𝗦𝗰𝗿𝗲𝗲𝗻𝘀𝗵𝗼𝘁!\n\n👤 𝗨𝘀𝗲𝗿: ${chatId}\n📦 𝗣𝗹𝗮𝗻: ${planName}\n💰 𝗖𝗿𝘆𝗽𝘁𝗼: ${user.crypto}\n⏰ 𝗧𝗶𝗺𝗲: ${new Date().toLocaleString()}`,
-                parse_mode: 'Markdown'
-            }).catch(()=>{});
-        } catch (e) {}
+                caption: caption,
+                parse_mode: 'Markdown',
+                reply_markup: getApprovalKeyboard(pendingIndex)
+            });
+        } catch (e) {
+            console.error('Error sending approval notification to admin:', e);
+        }
 
         await bot.telegram.editMessageText(chatId, proc.message_id, undefined, '✅ 𝗣𝗮𝘆𝗺𝗲𝗻𝘁 𝘀𝗰𝗿𝗲𝗲𝗻𝘀𝗵𝗼𝘁 𝗿𝗲𝗰𝗲𝗶𝘃𝗲𝗱 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆!').catch(()=>{});
         await delay(600);
-        
-        await bot.telegram.sendMessage(chatId, '🎯 𝗬𝗼𝘂𝗿 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀 𝘄𝗶𝗹𝗹 𝗯𝗲 𝘀𝗲𝗻𝘁 𝘄𝗶𝘁𝗵𝗶𝗻 𝟭𝟬 𝗺𝗶𝗻𝘂𝘁𝗲𝘀.\n⏰ 𝗣𝗹𝗲𝗮𝘀𝗲 𝗰𝗵𝗲𝗰𝗸 𝗯𝗮𝗰𝗸 𝘀𝗼𝗼𝗻!', { 
+
+        await bot.telegram.sendMessage(chatId, t(chatId, 'pending_approval'), { 
             reply_markup: getBackToMainKeyboard(chatId),
             parse_mode: 'Markdown'
         });
 
-        // Cleanup plan & crypto selection
+        // Cleanup plan & crypto selection (but don't set active plan yet)
         const u = users.get(chatId) || {};
         delete u.plan;
         delete u.crypto;
