@@ -14,7 +14,6 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const LOGS_FILE = path.join(DATA_DIR, 'purchase_logs.json');
 const CRYPTOS_FILE = path.join(DATA_DIR, 'cryptos.json');
 const PENDING_APPROVALS_FILE = path.join(DATA_DIR, 'pending_approvals.json');
-const BLOCKED_USERS_FILE = path.join(DATA_DIR, 'blocked_users.json');
 
 const OFFICIAL_CHANNEL_LINK = 'https://t.me/+Eg-SFpyzbpM0YzM1';
 const OFFICIAL_WEBSITE = 'https://www.callspoofing.shop';
@@ -125,7 +124,6 @@ let cryptos = [
     { name: '𝗧𝗢𝗡', address: 'UQCTDuH5udkgZDqvhmhmOHhG7NazA7g85-PUqj63jutnGXBI', qrFileId: null }
 ];
 let pendingApprovals = [];
-let blockedUsers = new Set();
 
 function loadJSON(file, fallback) {
     try {
@@ -143,15 +141,12 @@ function loadAllData() {
     const c = loadJSON(CRYPTOS_FILE, null);
     if (Array.isArray(c) && c.length) cryptos = c;
     pendingApprovals = loadJSON(PENDING_APPROVALS_FILE, []) || [];
-    const blocked = loadJSON(BLOCKED_USERS_FILE, []) || [];
-    blockedUsers = new Set(blocked);
 }
 
 function saveUsers() { try { fs.writeFileSync(USERS_FILE, JSON.stringify(Array.from(users.entries()), null, 2)); } catch (e) { console.error(e); } }
 function saveLogs() { try { fs.writeFileSync(LOGS_FILE, JSON.stringify(purchaseLogs, null, 2)); } catch (e) { console.error(e); } }
 function saveCryptos() { try { fs.writeFileSync(CRYPTOS_FILE, JSON.stringify(cryptos, null, 2)); } catch (e) { console.error(e); } }
 function savePendingApprovals() { try { fs.writeFileSync(PENDING_APPROVALS_FILE, JSON.stringify(pendingApprovals, null, 2)); } catch (e) { console.error(e); } }
-function saveBlockedUsers() { try { fs.writeFileSync(BLOCKED_USERS_FILE, Array.from(blockedUsers), null, 2); } catch (e) { console.error(e); } }
 
 // ---------- Translations (Enhanced with full bold styling) ----------
 const translations = {
@@ -172,9 +167,6 @@ const translations = {
         admin_remove_crypto: "➖ 𝗥𝗲𝗺𝗼𝘃𝗲 𝗖𝗿𝘆𝗽𝘁𝗼",
         admin_add_qr: "📷 𝗔𝗱𝗱 𝗤𝗥 𝗖𝗼𝗱𝗲",
         admin_remove_qr: "🗑️ 𝗥𝗲𝗺𝗼𝘃𝗲 𝗤𝗥 𝗖𝗼𝗱𝗲",
-        admin_block_user: "🚫 𝗕𝗹𝗼𝗰𝗸 𝗨𝘀𝗲𝗿",
-        admin_unblock_user: "✅ 𝗨𝗻𝗯𝗹𝗼𝗰𝗸 𝗨𝘀𝗲𝗿",
-        admin_blocked_users: "📋 𝗕𝗹𝗼𝗰𝗸𝗲𝗱 𝗨𝘀𝗲𝗿𝘀",
         help: `📘 𝗛𝗼𝘄 𝘁𝗼 𝗣𝘂𝗿𝗰𝗵𝗮𝘀𝗲 𝗮 𝗦𝗽𝗼𝗼𝗳 𝗖𝗮𝗹𝗹 𝗣𝗹𝗮𝗻:
 
 1. 𝗖𝗵𝗼𝗼𝘀𝗲 𝘆𝗼𝘂𝗿 𝗽𝗹𝗮𝗻 𝗳𝗿𝗼𝗺 𝘁𝗵𝗲 𝗺𝗮𝗶𝗻 𝗺𝗲𝗻𝘂
@@ -193,12 +185,7 @@ const translations = {
         join_channel: "📢 𝗝𝗼𝗶𝗻 𝗖𝗵𝗮𝗻𝗻𝗲𝗹",
         pending_approval: "⏳ 𝗬𝗼𝘂𝗿 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝗶𝘀 𝗽𝗲𝗻𝗱𝗶𝗻𝗴 𝗮𝗽𝗽𝗿𝗼𝘃𝗮𝗹. 𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗯𝗲 𝗻𝗼𝘁𝗶𝗳𝗶𝗲𝗱 𝘄𝗵𝗲𝗻 𝗮𝗽𝗽𝗿𝗼𝘃𝗲𝗱.",
         payment_approved: "✅ 𝗬𝗼𝘂𝗿 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗮𝗽𝗽𝗿𝗼𝘃𝗲𝗱! 𝗬𝗼𝘂𝗿 𝗽𝗹𝗮𝗻 𝗶𝘀 𝗻𝗼𝘄 𝗮𝗰𝘁𝗶𝘃𝗲.",
-        payment_rejected: "❌ 𝗬𝗼𝘂𝗿 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝘄𝗮𝘀 𝗻𝗼𝘁 𝗮𝗽𝗽𝗿𝗼𝘃𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗰𝗼𝗻𝘁𝗮𝗰𝘁 𝗮𝗱𝗺𝗶𝗻 𝗳𝗼𝗿 𝗺𝗼𝗿𝗲 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻.",
-        user_blocked: "🚫 𝗬𝗼𝘂 𝗵𝗮𝘃𝗲 𝗯𝗲𝗲𝗻 𝗯𝗹𝗼𝗰𝗸𝗲𝗱 𝗳𝗿𝗼𝗺 𝘂𝘀𝗶𝗻𝗴 𝘁𝗵𝗶𝘀 𝗯𝗼𝘁.",
-        user_blocked_success: "✅ 𝗨𝘀𝗲𝗿 {userId} 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝗯𝗹𝗼𝗰𝗸𝗲𝗱.",
-        user_unblocked_success: "✅ 𝗨𝘀𝗲𝗿 {userId} 𝗵𝗮𝘀 𝗯𝗲𝗲𝗻 𝘂𝗻𝗯𝗹𝗼𝗰𝗸𝗲𝗱.",
-        user_not_found: "❌ 𝗨𝘀𝗲𝗿 𝗻𝗼𝘁 𝗳𝗼𝘂𝗻𝗱.",
-        invalid_user_id: "❌ 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝘂𝘀𝗲𝗿 𝗜𝗗."
+        payment_rejected: "❌ 𝗬𝗼𝘂𝗿 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝘄𝗮𝘀 𝗻𝗼𝘁 𝗮𝗽𝗽𝗿𝗼𝘃𝗲𝗱. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗰𝗼𝗻𝘁𝗮𝗰𝘁 𝗮𝗱𝗺𝗶𝗻 𝗳𝗼𝗿 𝗺𝗼𝗿𝗲 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻."
     },
     fr: {
         welcome: "🌟 𝗕𝗶𝗲𝗻𝘃𝗲𝗻𝘂𝗲 𝗮𝘂𝘅 𝘀𝗲𝗿𝘃𝗶𝗰𝗲𝘀 𝗱𝗲 𝘀𝗽𝗼𝗼𝗳𝗶𝗻𝗴 𝗱'𝗮𝗽𝗽𝗲𝗹!\n𝗖𝗵𝗼𝗶𝘀𝗶𝘀𝘀𝗲𝘇 𝘃𝗼𝘁𝗿𝗲 𝗹𝗮𝗻𝗴𝘂𝗲:",
@@ -217,9 +204,6 @@ const translations = {
         admin_remove_crypto: "➖ 𝗦𝘂𝗽𝗽𝗿𝗶𝗺𝗲𝗿 𝗖𝗿𝘆𝗽𝘁𝗼",
         admin_add_qr: "📷 𝗔𝗷𝗼𝘂𝘁𝗲𝗿 𝗤𝗥 𝗖𝗼𝗱𝗲",
         admin_remove_qr: "🗑️ 𝗦𝘂𝗽𝗽𝗿𝗶𝗺𝗲𝗿 𝗤𝗥 𝗖𝗼𝗱𝗲",
-        admin_block_user: "🚫 𝗕𝗹𝗼𝗾𝘂𝗲𝗿 𝗨𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗲𝘂𝗿",
-        admin_unblock_user: "✅ 𝗗𝗲́𝗯𝗹𝗼𝗾𝘂𝗲𝗿 𝗨𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗲𝘂𝗿",
-        admin_blocked_users: "📋 𝗨𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗲𝘂𝗿𝘀 𝗕𝗹𝗼𝗾𝘂𝗲́𝘀",
         help: `📘 𝗠𝗼𝗱𝗲 𝗱'𝗲𝗺𝗽𝗹𝗼𝗶 :
 
 1. 𝗖𝗵𝗼𝗶𝘀𝗶𝘀𝘀𝗲𝘇 𝘃𝗼𝘁𝗿𝗲 𝗳𝗼𝗿𝗳𝗮𝗶𝘁 𝗱𝗮𝗻𝘀 𝗹𝗲 𝗺𝗲𝗻𝘂 𝗽𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹
@@ -238,12 +222,7 @@ const translations = {
         join_channel: "📢 𝗥𝗲𝗷𝗼𝗶𝗻𝗱𝗿𝗲 𝗹𝗮 𝗰𝗵𝗮𝗶̂𝗻𝗲",
         pending_approval: "⏳ 𝗩𝗼𝘁𝗿𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗲𝘀𝘁 𝗲𝗻 𝗮𝘁𝘁𝗲𝗻𝘁𝗲 𝗱'𝗮𝗽𝗽𝗿𝗼𝗯𝗮𝘁𝗶𝗼𝗻. 𝗩𝗼𝘂𝘀 𝘀𝗲𝗿𝗲𝘇 𝗻𝗼𝘁𝗶𝗳𝗶𝗲́(𝗲) 𝗾𝘂𝗮𝗻𝗱 𝗮𝗽𝗽𝗿𝗼𝘂𝘃𝗲́.",
         payment_approved: "✅ 𝗩𝗼𝘁𝗿𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗮 𝗲́𝘁𝗲́ 𝗮𝗽𝗽𝗿𝗼𝘂𝘃𝗲́! 𝗩𝗼𝘁𝗿𝗲 𝗳𝗼𝗿𝗳𝗮𝗶𝘁 𝗲𝘀𝘁 𝗺𝗮𝗶𝗻𝘁𝗲𝗻𝗮𝗻𝘁 𝗮𝗰𝘁𝗶𝗳.",
-        payment_rejected: "❌ 𝗩𝗼𝘁𝗿𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗻'𝗮 𝗽𝗮𝘀 𝗲́𝘁𝗲́ 𝗮𝗽𝗽𝗿𝗼𝘂𝘃𝗲́. 𝗩𝗲𝘂𝗶𝗹𝗹𝗲𝘇 𝗰𝗼𝗻𝘁𝗮𝗰𝘁𝗲𝗿 𝗹'𝗮𝗱𝗺𝗶𝗻 𝗽𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱'𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻𝘀.",
-        user_blocked: "🚫 𝗩𝗼𝘂𝘀 𝗮𝘃𝗲𝘇 𝗲́𝘁𝗲́ 𝗯𝗹𝗼𝗾𝘂𝗲́ 𝗱𝗲 𝗹'𝘂𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗶𝗼𝗻 𝗱𝘂 𝗯𝗼𝘁.",
-        user_blocked_success: "✅ 𝗟'𝘂𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗲𝘂𝗿 {userId} 𝗮 𝗲́𝘁𝗲́ 𝗯𝗹𝗼𝗾𝘂𝗲́.",
-        user_unblocked_success: "✅ 𝗟'𝘂𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗲𝘂𝗿 {userId} 𝗮 𝗲́𝘁𝗲́ 𝗱𝗲́𝗯𝗹𝗼𝗾𝘂𝗲́.",
-        user_not_found: "❌ 𝗨𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗲𝘂𝗿 𝗻𝗼𝗻 𝘁𝗿𝗼𝘂𝘃𝗲́.",
-        invalid_user_id: "❌ 𝗜𝗗 𝘂𝘁𝗶𝗹𝗶𝘀𝗮𝘁𝗲𝘂𝗿 𝗶𝗻𝘃𝗮𝗹𝗶𝗱𝗲."
+        payment_rejected: "❌ 𝗩𝗼𝘁𝗿𝗲 𝗽𝗮𝗶𝗲𝗺𝗲𝗻𝘁 𝗻'𝗮 𝗽𝗮𝘀 𝗲́𝘁𝗲́ 𝗮𝗽𝗽𝗿𝗼𝘂𝘃𝗲́. 𝗩𝗲𝘂𝗶𝗹𝗹𝗲𝘇 𝗰𝗼𝗻𝘁𝗮𝗰𝘁𝗲𝗿 𝗹'𝗮𝗱𝗺𝗶𝗻 𝗽𝗼𝘂𝗿 𝗽𝗹𝘂𝘀 𝗱'𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻𝘀."
     },
     de: {
         welcome: "🌟 𝗪𝗶𝗹𝗹𝗸𝗼𝗺𝗺𝗲𝗻 𝗯𝗲𝗶 𝗖𝗮𝗹𝗹 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴 𝗗𝗶𝗲𝗻𝘀𝘁𝗲𝗻!\n𝗪𝗮̈𝗵𝗹𝗲𝗻 𝗦𝗶𝗲 𝗜𝗵𝗿𝗲 𝗦𝗽𝗿𝗮𝗰𝗵𝗲:",
@@ -262,9 +241,6 @@ const translations = {
         admin_remove_crypto: "➖ 𝗞𝗿𝘆𝗽𝘁𝗼 𝗲𝗻𝘁𝗳𝗲𝗿𝗻𝗲𝗻",
         admin_add_qr: "📷 𝗤𝗥-𝗖𝗼𝗱𝗲 𝗵𝗶𝗻𝘇𝘂𝗳𝘂̈𝗴𝗲𝗻",
         admin_remove_qr: "🗑️ 𝗤𝗥-𝗖𝗼𝗱𝗲 𝗲𝗻𝘁𝗳𝗲𝗿𝗻𝗲𝗻",
-        admin_block_user: "🚫 𝗕𝗲𝗻𝘂𝘁𝘇𝗲𝗿 𝗦𝗽𝗲𝗿𝗿𝗲𝗻",
-        admin_unblock_user: "✅ 𝗕𝗲𝗻𝘂𝘁𝘇𝗲𝗿 𝗘𝗻𝘁𝘀𝗽𝗲𝗿𝗿𝗲𝗻",
-        admin_blocked_users: "📋 𝗚𝗲𝘀𝗽𝗲𝗿𝗿𝘁𝗲 𝗕𝗲𝗻𝘂𝘁𝘇𝗲𝗿",
         help: `📘 𝗔𝗻𝗹𝗲𝗶𝘁𝘂𝗻𝗴 𝘇𝘂𝗿 𝗕𝗲𝘀𝘁𝗲𝗹𝗹𝘂𝗻𝗴 𝗲𝗶𝗻𝗲𝘀 𝗦𝗽𝗼𝗼𝗳-𝗖𝗮𝗹𝗹-𝗧𝗮𝗿𝗶𝗳𝘀:
 
 1. 𝗪𝗮̈𝗵𝗹𝗲𝗻 𝗦𝗶𝗲 𝗜𝗵𝗿𝗲𝗻 𝗧𝗮𝗿𝗶𝗳 𝗮𝘂𝘀 𝗱𝗲𝗺 𝗛𝗮𝘂𝗽𝘁𝗺𝗲𝗻𝘂̈
@@ -283,12 +259,7 @@ const translations = {
         join_channel: "📢 𝗞𝗮𝗻𝗮𝗹 𝗯𝗲𝗶𝘁𝗿𝗲𝘁𝗲𝗻",
         pending_approval: "⏳ 𝗜𝗵𝗿𝗲 𝗭𝗮𝗵𝗹𝘂𝗻𝗴 𝘄𝗶𝗿𝗱 𝗴𝗲𝗽𝗿𝘂̈𝗳𝘁. 𝗦𝗶𝗲 𝘄𝗲𝗿𝗱𝗲𝗻 𝗯𝗲𝗻𝗮𝗰𝗵𝗿𝗶𝗰𝗵𝘁𝗶𝗴𝘁, 𝘄𝗲𝗻𝗻 𝘀𝗶𝗲 𝗴𝗲𝗻𝗲𝗵𝗺𝗶𝗴𝘁 𝘄𝗶𝗿𝗱.",
         payment_approved: "✅ 𝗜𝗵𝗿𝗲 𝗭𝗮𝗵𝗹𝘂𝗻𝗴 𝘄𝘂𝗿𝗱𝗲 𝗴𝗲𝗻𝗲𝗵𝗺𝗶𝗴𝘁! 𝗜𝗵𝗿 𝗧𝗮𝗿𝗶𝗳 𝗶𝘀𝘁 𝗷𝗲𝘁𝘇𝘁 𝗮𝗸𝘁𝗶𝘃.",
-        payment_rejected: "❌ 𝗜𝗵𝗿𝗲 𝗭𝗮𝗵𝗹𝘂𝗻𝗴 𝘄𝘂𝗿𝗱𝗲 𝗻𝗶𝗰𝗵𝘁 𝗴𝗲𝗻𝗲𝗵𝗺𝗶𝗴𝘁. 𝗕𝗶𝘁𝘁𝗲 𝗸𝗼𝗻𝘁𝗮𝗸𝘁𝗶𝗲𝗿𝗲𝗻 𝗦𝗶𝗲 𝗱𝗲𝗻 𝗔𝗱𝗺𝗶𝗻 𝗳𝘂̈𝗿 𝘄𝗲𝗶𝘁𝗲𝗿𝗲 𝗜𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻𝗲𝗻.",
-        user_blocked: "🚫 𝗦𝗶𝗲 𝘄𝘂𝗿𝗱𝗲𝗻 𝗴𝗲𝘀𝗽𝗲𝗿𝗿𝘁 𝗱𝗶𝗲𝘀𝗲𝗻 𝗕𝗼𝘁 𝘇𝘂 𝗻𝘂𝘁𝘇𝗲𝗻.",
-        user_blocked_success: "✅ 𝗕𝗲𝗻𝘂𝘁𝘇𝗲𝗿 {userId} 𝘄𝘂𝗿𝗱𝗲 𝗴𝗲𝘀𝗽𝗲𝗿𝗿𝘁.",
-        user_unblocked_success: "✅ 𝗕𝗲𝗻𝘂𝘁𝘇𝗲𝗿 {userId} 𝘄𝘂𝗿𝗱𝗲 𝗲𝗻𝘁𝘀𝗽𝗲𝗿𝗿𝘁.",
-        user_not_found: "❌ 𝗕𝗲𝗻𝘂𝘁𝘇𝗲𝗿 𝗻𝗶𝗰𝗵𝘁 𝗴𝗲𝗳𝘂𝗻𝗱𝗲𝗻.",
-        invalid_user_id: "❌ 𝗨𝗻𝗴𝘂̈𝗹𝘁𝗶𝗴𝗲 𝗕𝗲𝗻𝘂𝘁𝘇𝗲𝗿-𝗜𝗗."
+        payment_rejected: "❌ 𝗜𝗵𝗿𝗲 𝗭𝗮𝗵𝗹𝘂𝗻𝗴 𝘄𝘂𝗿𝗱𝗲 𝗻𝗶𝗰𝗵𝘁 𝗴𝗲𝗻𝗲𝗵𝗺𝗶𝗴𝘁. 𝗕𝗶𝘁𝘁𝗲 𝗸𝗼𝗻𝘁𝗮𝗸𝘁𝗶𝗲𝗿𝗲𝗻 𝗦𝗶𝗲 𝗱𝗲𝗻 𝗔𝗱𝗺𝗶𝗻 𝗳𝘂̈𝗿 𝘄𝗲𝗶𝘁𝗲𝗿𝗲 𝗜𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻𝗲𝗻."
     },
     es: {
         welcome: "🌟 𝗕𝗶𝗲𝗻𝘃𝗲𝗻𝗶𝗱𝗼 𝗮 𝗹𝗼𝘀 𝘀𝗲𝗿𝘃𝗶𝗰𝗶𝗼𝘀 𝗱𝗲 𝗹𝗹𝗮𝗺𝗮𝗱𝗮𝘀 𝗳𝗮𝗹𝘀𝗶𝗳𝗶𝗰𝗮𝗱𝗮𝘀!\n𝗘𝗹𝗶𝗷𝗮 𝘀𝘂 𝗶𝗱𝗶𝗼𝗺𝗮:",
@@ -307,9 +278,6 @@ const translations = {
         admin_remove_crypto: "➖ 𝗘𝗹𝗶𝗺𝗶𝗻𝗮𝗿 𝗖𝗿𝗶𝗽𝘁𝗼",
         admin_add_qr: "📷 𝗔𝗴𝗿𝗲𝗴𝗮𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗤𝗥",
         admin_remove_qr: "🗑️ 𝗘𝗹𝗶𝗺𝗶𝗻𝗮𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗤𝗥",
-        admin_block_user: "🚫 𝗕𝗹𝗼𝗾𝘂𝗲𝗮𝗿 𝗨𝘀𝘂𝗮𝗿𝗶𝗼",
-        admin_unblock_user: "✅ 𝗗𝗲𝘀𝗯𝗹𝗼𝗾𝘂𝗲𝗮𝗿 𝗨𝘀𝘂𝗮𝗿𝗶𝗼",
-        admin_blocked_users: "📋 𝗨𝘀𝘂𝗮𝗿𝗶𝗼𝘀 𝗕𝗹𝗼𝗾𝘂𝗲𝗮𝗱𝗼𝘀",
         help: `📘 𝗖𝗼́𝗺𝗼 𝗮𝗱𝗾𝘂𝗶𝗿𝗶𝗿 𝘂𝗻 𝗣𝗹𝗮𝗻 𝗱𝗲 𝗟𝗹𝗮𝗺𝗮𝗱𝗮𝘀 𝗙𝗮𝗹𝘀𝗶𝗳𝗶𝗰𝗮𝗱𝗮𝘀:
 
 1. 𝗘𝗹𝗶𝗷𝗮 𝘀𝘂 𝗽𝗹𝗮𝗻 𝗱𝗲𝗹 𝗺𝗲𝗻𝘂́ 𝗽𝗿𝗶𝗻𝗰𝗶𝗽𝗮𝗹
@@ -328,12 +296,7 @@ const translations = {
         join_channel: "📢 𝗨𝗻𝗶𝗿𝘀𝗲 𝗮𝗹 𝗖𝗮𝗻𝗮𝗹",
         pending_approval: "⏳ 𝗦𝘂 𝗽𝗮𝗴𝗼 𝗲𝘀𝘁𝗮́ 𝗽𝗲𝗻𝗱𝗶𝗲𝗻𝘁𝗲 𝗱𝗲 𝗮𝗽𝗽𝗿𝗼𝗯𝗮𝗰𝗶𝗼́𝗻. 𝗦𝗲𝗿𝗮́ 𝗻𝗼𝘁𝗶𝗳𝗶𝗰𝗮𝗱𝗼 𝗰𝘂𝗮𝗻𝗱𝗼 𝘀𝗲 𝗮𝗽𝗿𝘂𝗲𝗯𝗲.",
         payment_approved: "✅ 𝗦𝘂 𝗽𝗮𝗴𝗼 𝗵𝗮 𝘀𝗶𝗱𝗼 𝗮𝗽𝗿𝗼𝗯𝗮𝗱𝗼! 𝗦𝘂 𝗽𝗹𝗮𝗻 𝗲𝘀𝘁𝗮́ 𝗮𝗰𝘁𝗶𝘃𝗼 𝗮𝗵𝗼𝗿𝗮.",
-        payment_rejected: "❌ 𝗦𝘂 𝗽𝗮𝗴𝗼 𝗻𝗼 𝗳𝘂𝗲 𝗮𝗽𝗿𝗼𝗯𝗮𝗱𝗼. 𝗣𝗼𝗿 𝗳𝗮𝘃𝗼𝗿 𝗰𝗼𝗻𝘁𝗮𝗰𝘁𝗲 𝗮𝗹 𝗮𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝗱𝗼𝗿 𝗽𝗮𝗿𝗮 𝗺𝗮́𝘀 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝗰𝗶𝗼́𝗻.",
-        user_blocked: "🚫 𝗛𝗮 𝘀𝗶𝗱𝗼 𝗯𝗹𝗼𝗾𝘂𝗲𝗮𝗱𝗼 𝗱𝗲𝗹 𝘂𝘀𝗼 𝗱𝗲𝗹 𝗯𝗼𝘁.",
-        user_blocked_success: "✅ 𝗘𝗹 𝘂𝘀𝘂𝗮𝗿𝗶𝗼 {userId} 𝗵𝗮 𝘀𝗶𝗱𝗼 𝗯𝗹𝗼𝗾𝘂𝗲𝗮𝗱𝗼.",
-        user_unblocked_success: "✅ 𝗘𝗹 𝘂𝘀𝘂𝗮𝗿𝗶𝗼 {userId} 𝗵𝗮 𝘀𝗶𝗱𝗼 𝗱𝗲𝘀𝗯𝗹𝗼𝗾𝘂𝗲𝗮𝗱𝗼.",
-        user_not_found: "❌ 𝗨𝘀𝘂𝗮𝗿𝗶𝗼 𝗻𝗼 𝗲𝗻𝗰𝗼𝗻𝘁𝗿𝗮𝗱𝗼.",
-        invalid_user_id: "❌ 𝗜𝗗 𝗱𝗲 𝘂𝘀𝘂𝗮𝗿𝗶𝗼 𝗻𝗼 𝘃𝗮́𝗹𝗶𝗱𝗼."
+        payment_rejected: "❌ 𝗦𝘂 𝗽𝗮𝗴𝗼 𝗻𝗼 𝗳𝘂𝗲 𝗮𝗽𝗿𝗼𝗯𝗮𝗱𝗼. 𝗣𝗼𝗿 𝗳𝗮𝘃𝗼𝗿 𝗰𝗼𝗻𝘁𝗮𝗰𝘁𝗲 𝗮𝗹 𝗮𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝗱𝗼𝗿 𝗽𝗮𝗿𝗮 𝗺𝗮́𝘀 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝗰𝗶𝗼́𝗻."
     },
     ru: {
         welcome: "🌟 𝗗𝗼𝗯𝗿𝗼 𝗽𝗼𝗷𝗮𝗹𝗼𝘃𝗮𝘁𝗻 𝘃 𝗦𝗲𝗿𝘃𝗶𝘀 𝗦𝗽𝘂𝗳𝗶𝗻𝗴𝗮 𝗭𝘃𝗼𝗻𝗸𝗼𝘃!\n𝗩𝘆𝗯𝗲𝗿𝗶𝘁𝗲 𝘀𝘃𝗼𝗶̆ 𝘆𝗮𝘇𝘆𝗸:",
@@ -352,9 +315,6 @@ const translations = {
         admin_remove_crypto: "➖ 𝗨𝗱𝗮𝗹𝗶𝘁𝗻 𝗞𝗿𝗶𝗽𝘁𝗼𝘃𝗮𝗹𝗶𝘂𝘁𝘂",
         admin_add_qr: "📷 𝗗𝗼𝗯𝗮𝘃𝗶𝘁𝗻 𝗤𝗥-𝗸𝗼𝗱",
         admin_remove_qr: "🗑️ 𝗨𝗱𝗮𝗹𝗶𝘁𝗻 𝗤𝗥-𝗸𝗼𝗱",
-        admin_block_user: "🚫 𝗕𝗹𝗼𝗸𝗶𝗿𝗼𝘃𝗮𝘁𝗻 𝗣𝗼𝗹𝘇𝗼𝘃𝗮𝘁𝗲𝗹𝗷𝗮",
-        admin_unblock_user: "✅ 𝗥𝗮𝘇𝗯𝗹𝗼𝗸𝗶𝗿𝗼𝘃𝗮𝘁𝗻 𝗣𝗼𝗹𝘇𝗼𝘃𝗮𝘁𝗲𝗹𝗷𝗮",
-        admin_blocked_users: "📋 𝗭𝗮𝗯𝗹𝗼𝗸𝗶𝗿𝗼𝘃𝗮𝗻𝗻𝘆𝗲 𝗣𝗼𝗹𝘇𝗼𝘃𝗮𝘁𝗲𝗹𝗶",
         help: `📘 𝗞𝗮𝗸 𝗣𝗿𝗶𝗼𝗯𝗿𝗲𝘀𝘁𝗶 𝗣𝗹𝗮𝗻 𝗦𝗽𝘂𝗳𝗶𝗻𝗴𝗮 𝗭𝘃𝗼𝗻𝗸𝗼𝘃:
 
 1. 𝗩𝘆𝗯𝗲𝗿𝗶𝘁𝗲 𝘀𝘃𝗼𝗶̆ 𝗽𝗹𝗮𝗻 𝗶𝘇 𝗴𝗹𝗮𝘃𝗻𝗼𝗴𝗼 𝗺𝗲𝗻𝘆𝘂
@@ -373,12 +333,7 @@ const translations = {
         join_channel: "📢 𝗣𝗿𝗶𝘀𝗼𝗲𝗱𝗶𝗻𝗶𝘁𝗻𝘀𝘆𝗮 𝗞 𝗞𝗮𝗻𝗮𝗹𝘂",
         pending_approval: "⏳ 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝘁𝗲𝘇𝗵 𝗼𝗷𝗶𝗱𝗮𝗲𝘁 𝗽𝗼𝗱𝘁𝘃𝗲𝗿𝘇𝗵𝗱𝗲𝗻𝗶𝗷𝗮. 𝗩𝘆 𝗯𝘂𝗱𝗲𝘁𝗲 𝘂𝘃𝗲𝗱𝗼𝗺𝗹𝗲𝗻𝘆, 𝗸𝗼𝗴𝗱𝗮 𝗼𝗻 𝗯𝘂𝗱𝗲𝘁 𝗼𝗱𝗼𝗯𝗿𝗲𝗻.",
         payment_approved: "✅ 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝘁𝗲𝘇𝗵 𝗼𝗱𝗼𝗯𝗿𝗲𝗻! 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝗻 𝘁𝗲𝗽𝗲𝗿𝗻 𝗮𝗸𝘁𝗶𝘃𝗲𝗻.",
-        payment_rejected: "❌ 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝘁𝗲𝘇𝗵 𝗻𝗲 𝗯𝘆𝗹 𝗼𝗱𝗼𝗯𝗿𝗲𝗻. 𝗣𝗼𝗷𝗮𝗹𝘂𝗶̆𝘀𝘁𝗮, 𝘀𝘃𝘆𝗮𝘇𝗵𝗶𝘁𝗲𝘀𝗻 𝘀 𝗮𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝘁𝗼𝗿𝗼𝗺 𝗱𝗹𝗷𝗮 𝗽𝗼𝗹𝘂𝗰𝗵𝗲𝗻𝗶𝗷𝗮 𝗱𝗼𝗽𝗼𝗹𝗻𝗶𝘁𝗲𝗹𝗻𝗼𝗶̆ 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝗰𝗶𝗶.",
-        user_blocked: "🚫 𝗩𝗮𝗺 𝗯𝗮𝗻 𝗻𝗮 𝗶𝘀𝗽𝗼𝗹𝘇𝗼𝘃𝗮𝗻𝗶𝗲 𝗯𝗼𝘁𝗮.",
-        user_blocked_success: "✅ 𝗣𝗼𝗹𝘇𝗼𝘃𝗮𝘁𝗲𝗹𝗻 {userId} 𝗯𝗮𝗻𝗻𝗲𝗻.",
-        user_unblocked_success: "✅ 𝗣𝗼𝗹𝘇𝗼𝘃𝗮𝘁𝗲𝗹𝗻 {userId} 𝗿𝗮𝘇𝗯𝗹𝗼𝗸𝗶𝗿𝗼𝘃𝗮𝗻.",
-        user_not_found: "❌ 𝗣𝗼𝗹𝘇𝗼𝘃𝗮𝘁𝗲𝗹𝗻 𝗻𝗲 𝗻𝗮𝗶̆𝗱𝗲𝗻.",
-        invalid_user_id: "❌ 𝗡𝗲𝘃𝗲𝗿𝗻𝘆𝗶̆ 𝗜𝗗 𝗽𝗼𝗹𝘇𝗼𝘃𝗮𝘁𝗲𝗹𝗻."
+        payment_rejected: "❌ 𝗩𝗮𝘀𝗵 𝗽𝗹𝗮𝘁𝗲𝘇𝗵 𝗻𝗲 𝗯𝘆𝗹 𝗼𝗱𝗼𝗯𝗿𝗲𝗻. 𝗣𝗼𝗷𝗮𝗹𝘂𝗶̆𝘀𝘁𝗮, 𝘀𝘃𝘆𝗮𝘇𝗵𝗶𝘁𝗲𝘀𝗻 𝘀 𝗮𝗱𝗺𝗶𝗻𝗶𝘀𝘁𝗿𝗮𝘁𝗼𝗿𝗼𝗺 𝗱𝗹𝗷𝗮 𝗽𝗼𝗹𝘂𝗰𝗵𝗲𝗻𝗶𝗷𝗮 𝗱𝗼𝗽𝗼𝗹𝗻𝗶𝘁𝗲𝗹𝗻𝗼𝗶̆ 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝗰𝗶𝗶."
     }
 };
 
@@ -510,11 +465,7 @@ function getAdminKeyboard(chatId) {
                 { text: t(chatId, 'admin_add_qr'), callback_data: 'admin_add_qr' }
             ],
             [
-                { text: t(chatId, 'admin_block_user'), callback_data: 'admin_block_user' },
-                { text: t(chatId, 'admin_unblock_user'), callback_data: 'admin_unblock_user' }
-            ],
-            [
-                { text: t(chatId, 'admin_blocked_users'), callback_data: 'admin_blocked_users' }
+                { text: t(chatId, 'admin_remove_qr'), callback_data: 'admin_remove_qr' }
             ],
             [
                 { text: t(chatId, 'main_menu'), callback_data: 'main_menu' }
@@ -581,11 +532,11 @@ async function sendAnimatedWelcome(chatId) {
         await delay(450);
         await bot.telegram.editMessageText(chatId, msg.message_id, undefined, '🌟 𝗥𝗲𝗮𝗱𝘆!');
         await delay(300);
-
+        
         const user = users.get(chatId) || {};
         const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
         const welcomeText = `${t(chatId, 'welcome')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-
+        
         await bot.telegram.editMessageText(chatId, msg.message_id, undefined, welcomeText, { 
             reply_markup: getLangKeyboard(),
             parse_mode: 'Markdown'
@@ -613,7 +564,7 @@ async function sendMainMenu(chatId) {
     const user = users.get(chatId) || {};
     const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
     const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-
+    
     try {
         await bot.telegram.sendMessage(chatId, menuText, {
             reply_markup: getMainMenuKeyboard(chatId),
@@ -624,28 +575,9 @@ async function sendMainMenu(chatId) {
     }
 }
 
-// ---------- Blocked user check middleware ----------
-bot.use(async (ctx, next) => {
-    const chatId = ctx.chat?.id;
-    if (chatId && blockedUsers.has(chatId)) {
-        if (ctx.message && ctx.message.text !== '/start') {
-            await ctx.reply(t(chatId, 'user_blocked'), { parse_mode: 'Markdown' });
-        }
-        return;
-    }
-    await next();
-});
-
 // ---------- Handlers: /start ----------
 bot.start(async (ctx) => {
     const chatId = ctx.chat.id;
-    
-    // Check if user is blocked
-    if (blockedUsers.has(chatId)) {
-        await ctx.reply(t(chatId, 'user_blocked'), { parse_mode: 'Markdown' });
-        return;
-    }
-
     if (!users.has(chatId)) {
         users.set(chatId, { lang: 'en' });
         saveUsers();
@@ -661,12 +593,6 @@ bot.start(async (ctx) => {
 bot.on('callback_query', async (ctx) => {
     const chatId = ctx.update.callback_query.message.chat.id;
     const data = ctx.update.callback_query.data;
-
-    // Check if user is blocked
-    if (blockedUsers.has(chatId)) {
-        await ctx.answerCbQuery(t(chatId, 'user_blocked'));
-        return;
-    }
 
     try {
         // Language change
@@ -684,11 +610,11 @@ bot.on('callback_query', async (ctx) => {
                 await delay(500);
                 await ctx.editMessageText('✅ 𝗟𝗮𝗻𝗴𝘂𝗮𝗴𝗲 𝘂𝗽𝗱𝗮𝘁𝗲𝗱!');
                 await delay(350);
-
+                
                 const user = users.get(chatId) || {};
                 const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
                 const welcomeText = `${t(chatId, 'language_set')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-
+                
                 await ctx.editMessageText(welcomeText, { 
                     reply_markup: getMainMenuKeyboard(chatId), 
                     parse_mode: 'Markdown' 
@@ -707,7 +633,7 @@ bot.on('callback_query', async (ctx) => {
                     const user = users.get(chatId) || {};
                     const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
                     const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-
+                    
                     await ctx.editMessageText(menuText, { 
                         reply_markup: getMainMenuKeyboard(chatId), 
                         parse_mode: 'Markdown' 
@@ -717,7 +643,7 @@ bot.on('callback_query', async (ctx) => {
                     const user = users.get(chatId) || {};
                     const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
                     const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-
+                    
                     await ctx.telegram.sendMessage(chatId, menuText, {
                         reply_markup: getMainMenuKeyboard(chatId),
                         parse_mode: 'Markdown'
@@ -961,7 +887,7 @@ bot.on('callback_query', async (ctx) => {
             } else if (data === 'admin_add_qr') {
                 await ctx.answerCbQuery();
                 try {
-                    await ctx.editMessageText('📷 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹 𝘁𝗼 𝗮𝗱𝗱 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
+                    await ctx.editMessageText('📷 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝘆𝗽𝘁𝗼 𝘁𝗼 𝗮𝗱𝗱 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
                         reply_markup: getCryptoSelectionKeyboard('add_qr')
                     });
                 } catch(e){
@@ -970,44 +896,11 @@ bot.on('callback_query', async (ctx) => {
             } else if (data === 'admin_remove_qr') {
                 await ctx.answerCbQuery();
                 try {
-                    await ctx.editMessageText('🗑️ 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹 𝘁𝗼 𝗿𝗲𝗺𝗼𝘃𝗲 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
+                    await ctx.editMessageText('🗑️ 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝘆𝗽𝘁𝗼 𝘁𝗼 𝗿𝗲𝗺𝗼𝘃𝗲 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
                         reply_markup: getCryptoSelectionKeyboard('remove_qr')
                     });
                 } catch(e){
                     console.error('Error in admin_remove_qr:', e);
-                }
-            } else if (data === 'admin_block_user') {
-                await ctx.answerCbQuery();
-                const u = users.get(chatId) || {};
-                u.waitingForBlockUser = true;
-                users.set(chatId, u);
-                saveUsers();
-                try {
-                    await ctx.editMessageText('🚫 𝗦𝗲𝗻𝗱 𝘁𝗵𝗲 𝘂𝘀𝗲𝗿 𝗜𝗗 𝘁𝗼 𝗯𝗹𝗼𝗰𝗸:');
-                } catch(e){
-                    console.error('Error in admin_block_user:', e);
-                }
-            } else if (data === 'admin_unblock_user') {
-                await ctx.answerCbQuery();
-                const u = users.get(chatId) || {};
-                u.waitingForUnblockUser = true;
-                users.set(chatId, u);
-                saveUsers();
-                try {
-                    await ctx.editMessageText('✅ 𝗦𝗲𝗻𝗱 𝘁𝗵𝗲 𝘂𝘀𝗲𝗿 𝗜𝗗 𝘁𝗼 𝘂𝗻𝗯𝗹𝗼𝗰𝗸:');
-                } catch(e){
-                    console.error('Error in admin_unblock_user:', e);
-                }
-            } else if (data === 'admin_blocked_users') {
-                await ctx.answerCbQuery();
-                try {
-                    const blockedList = Array.from(blockedUsers).map(id => `• ${id}`).join('\n') || '❌ 𝗡𝗼 𝗯𝗹𝗼𝗰𝗸𝗲𝗱 𝘂𝘀𝗲𝗿𝘀';
-                    await ctx.editMessageText(`📋 𝗕𝗹𝗼𝗰𝗸𝗲𝗱 𝗨𝘀𝗲𝗿𝘀:\n\n${blockedList}`, {
-                        reply_markup: getAdminKeyboard(chatId),
-                        parse_mode: 'Markdown'
-                    });
-                } catch(e){
-                    console.error('Error in admin_blocked_users:', e);
                 }
             } else if (data.startsWith('add_qr_')) {
                 const cryptoName = data.replace('add_qr_', '');
@@ -1044,11 +937,11 @@ bot.on('callback_query', async (ctx) => {
                 const approval = pendingApprovals[index];
                 if (approval) {
                     await ctx.answerCbQuery('✅ 𝗔𝗽𝗽𝗿𝗼𝘃𝗶𝗻𝗴...');
-
+                    
                     // Remove from pending approvals
                     pendingApprovals.splice(index, 1);
                     savePendingApprovals();
-
+                    
                     // Activate plan for user
                     const user = users.get(approval.userId);
                     if (user) {
@@ -1056,18 +949,18 @@ bot.on('callback_query', async (ctx) => {
                         users.set(approval.userId, user);
                         saveUsers();
                     }
-
+                    
                     // Notify user
                     try {
                         await bot.telegram.sendMessage(approval.userId, t(approval.userId, 'payment_approved'), {
                             parse_mode: 'Markdown'
                         });
-
+                        
                         // Send updated main menu to user
                         const userUpdated = users.get(approval.userId) || {};
                         const activePlan = userUpdated.activePlan ? getPlanName(approval.userId, userUpdated.activePlan) : 'None';
                         const menuText = `${t(approval.userId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${approval.userId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-
+                        
                         await bot.telegram.sendMessage(approval.userId, menuText, {
                             reply_markup: getMainMenuKeyboard(approval.userId),
                             parse_mode: 'Markdown'
@@ -1075,7 +968,7 @@ bot.on('callback_query', async (ctx) => {
                     } catch (e) {
                         console.error('Error notifying user:', e);
                     }
-
+                    
                     try {
                         // Edit the admin message to show approved
                         await ctx.editMessageCaption({
@@ -1093,11 +986,11 @@ bot.on('callback_query', async (ctx) => {
                 const approval = pendingApprovals[index];
                 if (approval) {
                     await ctx.answerCbQuery('❌ 𝗥𝗲𝗷𝗲𝗰𝘁𝗶𝗻𝗴...');
-
+                    
                     // Remove from pending approvals
                     pendingApprovals.splice(index, 1);
                     savePendingApprovals();
-
+                    
                     // Notify user
                     try {
                         await bot.telegram.sendMessage(approval.userId, t(approval.userId, 'payment_rejected'), {
@@ -1106,7 +999,7 @@ bot.on('callback_query', async (ctx) => {
                     } catch (e) {
                         console.error('Error notifying user:', e);
                     }
-
+                    
                     try {
                         // Edit the admin message to show rejected
                         await ctx.editMessageCaption({
@@ -1134,12 +1027,6 @@ bot.on('message', async (ctx) => {
     const chatId = ctx.chat.id;
     const user = users.get(chatId) || {};
 
-    // Check if user is blocked
-    if (blockedUsers.has(chatId) && ctx.message.text !== '/start') {
-        await ctx.reply(t(chatId, 'user_blocked'), { parse_mode: 'Markdown' });
-        return;
-    }
-
     // Ignore slash commands
     if (ctx.message.text && ctx.message.text.startsWith('/')) return;
 
@@ -1158,9 +1045,9 @@ bot.on('message', async (ctx) => {
         let sent = 0;
         let failed = 0;
 
-        // Send to all users (excluding blocked users and admin)
+        // Send to all users
         for (const [uid, userData] of users.entries()) {
-            if (uid !== ADMIN_ID && !blockedUsers.has(uid)) {
+            if (uid !== ADMIN_ID) {
                 try {
                     await bot.telegram.sendMessage(uid, `📢 ${stylizeFullText(broadcastMessage)}`, { parse_mode: 'Markdown' });
                     sent++;
@@ -1186,7 +1073,7 @@ bot.on('message', async (ctx) => {
 
     // Admin: add crypto
     if (chatId === ADMIN_ID && user.waitingForCrypto && ctx.message.text) {
-        const processing = await bot.telegram.sendMessage(chatId, '🔄 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹 𝗮𝗱𝗱𝗶𝘁𝗶𝗼𝗻...');
+        const processing = await bot.telegram.sendMessage(chatId, '🔄 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝘆𝗽𝘁𝗼 𝗮𝗱𝗱𝗶𝘁𝗶𝗼𝗻...');
         const parts = ctx.message.text.split('|').map(s => s.trim());
         if (parts.length === 2) {
             cryptos.push({ name: stylizeFullText(parts[0]), address: parts[1], qrFileId: null }); 
@@ -1195,7 +1082,7 @@ bot.on('message', async (ctx) => {
             users.set(chatId, user); 
             saveUsers();
             await bot.telegram.editMessageText(chatId, processing.message_id, undefined, 
-                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗮𝗱𝗱𝗲𝗱 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹: ${stylizeFullText(parts[0])}`).catch(()=>{});
+                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗮𝗱𝗱𝗲𝗱 𝗰𝗿𝘆𝗽𝘁𝗼: ${stylizeFullText(parts[0])}`).catch(()=>{});
             setTimeout(() => bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
                 reply_markup: getAdminKeyboard(chatId),
                 parse_mode: 'Markdown'
@@ -1216,7 +1103,7 @@ bot.on('message', async (ctx) => {
 
     // Admin: remove crypto
     if (chatId === ADMIN_ID && user.waitingForRemoveCrypto && ctx.message.text) {
-        const proc = await bot.telegram.sendMessage(chatId, '🗑️ 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹 𝗿𝗲𝗺𝗼𝘃𝗮𝗹...');
+        const proc = await bot.telegram.sendMessage(chatId, '🗑️ 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝘆𝗽𝘁𝗼 𝗿𝗲𝗺𝗼𝘃𝗮𝗹...');
         const index = parseInt(ctx.message.text.trim(), 10) - 1;
         if (isNaN(index) || index < 0 || index >= cryptos.length) {
             user.waitingForRemoveCrypto = false; 
@@ -1237,7 +1124,7 @@ bot.on('message', async (ctx) => {
             users.set(chatId, user); 
             saveUsers();
             await bot.telegram.editMessageText(chatId, proc.message_id, undefined, 
-                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗿𝗲𝗺𝗼𝘃𝗲𝗱: ${removed.name}\n\n𝗨𝗽𝗱𝗮𝘁𝗲𝗱 𝗹𝗶𝘀𝘁:\n${cryptos.map((c,i) => `${i+1}. ${c.name}`).join('\n') || '❌ 𝗡𝗼 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀 𝗿𝗲𝗺𝗮𝗶𝗻𝗶𝗻𝗴'}`, {
+                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗿𝗲𝗺𝗼𝘃𝗲𝗱: ${removed.name}\n\n𝗨𝗽𝗱𝗮𝘁𝗲𝗱 𝗹𝗶𝘀𝘁:\n${cryptos.map((c,i) => `${i+1}. ${c.name}`).join('\n') || '❌ 𝗡𝗼 𝗰𝗿𝘆𝗽𝘁𝗼𝘀 𝗿𝗲𝗺𝗮𝗶𝗻𝗶𝗻𝗴'}`, {
                 parse_mode: 'Markdown'
             }).catch(()=>{});
             setTimeout(() => bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
@@ -1267,56 +1154,6 @@ bot.on('message', async (ctx) => {
         return;
     }
 
-    // Admin: block user
-    if (chatId === ADMIN_ID && user.waitingForBlockUser && ctx.message.text) {
-        const userId = parseInt(ctx.message.text.trim());
-        if (isNaN(userId)) {
-            await ctx.reply(t(chatId, 'invalid_user_id'));
-        } else if (blockedUsers.has(userId)) {
-            await ctx.reply(`❌ 𝗨𝘀𝗲𝗿 ${userId} 𝗶𝘀 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗯𝗹𝗼𝗰𝗸𝗲𝗱.`);
-        } else {
-            blockedUsers.add(userId);
-            saveBlockedUsers();
-            await ctx.reply(t(chatId, 'user_blocked_success', { userId: userId }));
-        }
-        user.waitingForBlockUser = false;
-        users.set(chatId, user);
-        saveUsers();
-        
-        setTimeout(() => {
-            bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
-                reply_markup: getAdminKeyboard(chatId),
-                parse_mode: 'Markdown'
-            });
-        }, 900);
-        return;
-    }
-
-    // Admin: unblock user
-    if (chatId === ADMIN_ID && user.waitingForUnblockUser && ctx.message.text) {
-        const userId = parseInt(ctx.message.text.trim());
-        if (isNaN(userId)) {
-            await ctx.reply(t(chatId, 'invalid_user_id'));
-        } else if (!blockedUsers.has(userId)) {
-            await ctx.reply(t(chatId, 'user_not_found'));
-        } else {
-            blockedUsers.delete(userId);
-            saveBlockedUsers();
-            await ctx.reply(t(chatId, 'user_unblocked_success', { userId: userId }));
-        }
-        user.waitingForUnblockUser = false;
-        users.set(chatId, user);
-        saveUsers();
-        
-        setTimeout(() => {
-            bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
-                reply_markup: getAdminKeyboard(chatId),
-                parse_mode: 'Markdown'
-            });
-        }, 900);
-        return;
-    }
-
     // User: payment screenshot (photo)
     if (ctx.message.photo && user.plan && user.crypto) {
         const proc = await bot.telegram.sendMessage(chatId, '📸 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝘀𝗰𝗿𝗲𝗲𝗻𝘀𝗵𝗼𝘁...');
@@ -1326,7 +1163,7 @@ bot.on('message', async (ctx) => {
         await bot.telegram.editMessageText(chatId, proc.message_id, undefined, '📋 𝗟𝗼𝗴𝗴𝗶𝗻𝗴 𝗽𝘂𝗿𝗰𝗵𝗮𝘀𝗲 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻...').catch(()=>{});
 
         const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
-
+        
         // Add to pending approvals instead of directly activating
         const pendingIndex = pendingApprovals.length;
         pendingApprovals.push({ 
