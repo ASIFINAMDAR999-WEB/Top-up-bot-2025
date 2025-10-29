@@ -1,5 +1,7 @@
+
 // index.js — Enhanced Telegraf-based Telegram Top-Up Bot
 // All text uses bold Unicode styling. Inline keyboards improved with better layout.
+// Added automatic message cleanup for better user experience
 
 const { Telegraf } = require('telegraf');
 const fs = require('fs');
@@ -21,6 +23,57 @@ const ADMIN_CONTACT = '@AF3092';
 
 // ---------- Bot init ----------
 const bot = new Telegraf(TOKEN);
+
+// ---------- Message cleanup manager ----------
+const userMessageHistory = new Map(); // chatId -> array of message IDs to clean up
+
+// Function to add message to cleanup queue
+function addMessageToCleanup(chatId, messageId) {
+    if (!userMessageHistory.has(chatId)) {
+        userMessageHistory.set(chatId, []);
+    }
+    const messages = userMessageHistory.get(chatId);
+    messages.push(messageId);
+    
+    // Keep only last 20 messages to prevent memory issues
+    if (messages.length > 20) {
+        messages.shift();
+    }
+}
+
+// Function to cleanup user messages
+async function cleanupUserMessages(chatId) {
+    if (userMessageHistory.has(chatId)) {
+        const messages = userMessageHistory.get(chatId);
+        for (const messageId of messages) {
+            try {
+                await bot.telegram.deleteMessage(chatId, messageId);
+                await delay(100); // Small delay to avoid rate limits
+            } catch (error) {
+                // Ignore errors (messages might be too old or already deleted)
+            }
+        }
+        userMessageHistory.set(chatId, []);
+    }
+}
+
+// Function to cleanup specific message
+async function cleanupMessage(chatId, messageId) {
+    try {
+        await bot.telegram.deleteMessage(chatId, messageId);
+        
+        // Remove from cleanup queue if exists
+        if (userMessageHistory.has(chatId)) {
+            const messages = userMessageHistory.get(chatId);
+            const index = messages.indexOf(messageId);
+            if (index > -1) {
+                messages.splice(index, 1);
+            }
+        }
+    } catch (error) {
+        // Ignore deletion errors
+    }
+}
 
 // ---------- Unicode bold stylizer (enhanced for full bot styling) ----------
 function toBoldUnicodeChar(ch) {
@@ -358,7 +411,7 @@ const plansData = {
         {
             id: 'platinum1m',
             name: '🔅 𝗣𝗟𝗔𝗧𝗜𝗡𝗨𝗠 𝟭-𝗠𝗢𝗡𝗧𝗛 𝗣𝗟𝗔𝗡 — $𝟭𝟱𝟬 🔅',
-            description: '1 𝗠𝗼𝗻𝘁𝗵 𝗨𝗻𝗹𝗶𝗺𝗶𝘁𝗲𝗱 𝗖𝗮𝗹𝗹𝗶𝗻𝗴 — 𝗻𝗼 𝗽𝗲𝗿-𝗺𝗶𝗻𝘂𝘁𝗲 𝗰𝗵𝗮𝗿𝗴𝗲𝘀\n\n𝗜𝗻𝗰𝗹𝘂𝗱𝗲𝘀 𝗮𝗹𝗹 𝗽𝗿𝗲𝗺𝗶𝘂𝗺 𝗳𝗲𝗮𝘁𝘂𝗿𝗲𝘀:\n• 𝗔𝗱𝘃𝗮𝗻𝗰𝗲𝗱 𝗖𝗮𝗹𝗹 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴\n• 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗩𝗼𝗶𝗰𝗲 𝗖𝗵𝗮𝗻𝗴𝗲𝗿\n• 𝗘𝗻𝗵𝗮𝗻𝗰𝗲𝗱 𝗥𝗼𝘂𝘁𝗶𝗻𝗴\n• 𝗗𝗧𝗠𝗙 𝗧𝗼𝗻𝗲 𝗗𝗲𝘁𝗲𝗰𝘁𝗶𝗼𝗻 & 𝗖𝗼𝗻𝘁𝗿𝗼𝗹\n• 𝗣𝗿𝗶𝗼𝗿𝗶𝘁𝘆 𝗦𝘂𝗽𝗽𝗼𝗿𝘁\n• 𝗔𝗱𝘃𝗮𝗻𝗰𝗲 𝗢𝗧𝗣 𝗯𝗼𝘁 𝗔𝗰𝗰𝗲𝘀𝘀\n• 𝗙𝘂𝗹𝗹 𝗔𝗰𝗰𝗲𝘀𝘀 𝘁𝗼 𝗪𝗲𝗯𝘀𝗶𝘁𝗲, 𝗪𝗲𝗯 𝗔𝗽𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻 & 𝗧𝗲𝗹𝗲𝗴𝗿𝗮𝗺 𝗕𝗼𝘁\n• 𝗘𝗺𝗮𝗶𝗹 & 𝗦𝗠𝗦 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴 𝗔𝗰𝗰𝗲𝘀𝘀\n• 𝗜𝗩𝗥 𝗦𝘆𝘀𝘁𝗲𝗺\n• 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗧𝗼𝗹𝗹-𝗙𝗿𝗲𝗲 𝗡𝘂𝗺𝗯𝗲𝗿 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴\n• 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝗜𝗣 𝗧𝗿𝘂𝗻𝗸 𝗔𝗰𝗰𝗲𝘀𝘀 (𝗶𝗻𝗯𝗼𝘂𝗻𝗱 & 𝗼𝘂𝘁𝗯𝗼𝘂𝗻𝗱, 𝘄𝗶𝘁𝗵 𝗱𝗲𝗱𝗶𝗰𝗮𝘁𝗲𝗱 𝗿𝗼𝘂𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗲𝗻𝗵𝗮𝗻𝗰𝗲𝗱 𝗾𝘂𝗮𝗹𝗶𝘁𝘆)\n\n📌 𝗔𝘀 𝗮𝗻 𝗶𝗻𝘁𝗿𝗼𝗱𝘂𝗰𝘁𝗼𝗿𝘆 𝗼𝗳𝗳𝗲𝗿, 𝘁𝗵𝗲 𝗣𝗹𝗮𝘁𝗶𝗻𝘂𝗺 𝗣𝗹𝗮𝗻 𝗶𝘀 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲 𝗳𝗼𝗿 𝟭 𝗠𝗼𝗻𝘁𝗵 𝗮𝘁 $𝟭𝟱𝟬 — 𝗙𝗼𝗿 𝗡𝗲𝘄 𝗖𝗹𝗶𝗲𝗻𝘁𝘀 𝗢𝗻𝗹𝘆'
+            description: '1 𝗠𝗼𝗻𝘁𝗵 𝗨𝗻𝗹𝗶𝗺𝗶𝘁𝗲𝗱 𝗖𝗮𝗹𝗿𝗲𝗱𝗶𝘁𝗶𝗮𝗹𝘀 — 𝗻𝗼 𝗽𝗲𝗿-𝗺𝗶𝗻𝘂𝘁𝗲 𝗰𝗵𝗮𝗿𝗴𝗲𝘀\n\n𝗜𝗻𝗰𝗹𝘂𝗱𝗲𝘀 𝗮𝗹𝗹 𝗽𝗿𝗲𝗺𝗶𝘂𝗺 𝗳𝗲𝗮𝘁𝘂𝗿𝗲𝘀:\n• 𝗔𝗱𝘃𝗮𝗻𝗰𝗲𝗱 𝗖𝗮𝗹𝗹 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴\n• 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗩𝗼𝗶𝗰𝗲 𝗖𝗵𝗮𝗻𝗴𝗲𝗿\n• 𝗘𝗻𝗵𝗮𝗻𝗰𝗲𝗱 𝗥𝗼𝘂𝘁𝗶𝗻𝗴\n• 𝗗𝗧𝗠𝗙 𝗧𝗼𝗻𝗲 𝗗𝗲𝘁𝗲𝗰𝘁𝗶𝗼𝗻 & 𝗖𝗼𝗻𝘁𝗿𝗼𝗹\n• 𝗣𝗿𝗶𝗼𝗿𝗶𝘁𝘆 𝗦𝘂𝗽𝗽𝗼𝗿𝘁\n• 𝗔𝗱𝘃𝗮𝗻𝗰𝗲 𝗢𝗧𝗣 𝗯𝗼𝘁 𝗔𝗰𝗰𝗲𝘀𝘀\n• 𝗙𝘂𝗹𝗹 𝗔𝗰𝗰𝗲𝘀𝘀 𝘁𝗼 𝗪𝗲𝗯𝘀𝗶𝘁𝗲, 𝗪𝗲𝗯 𝗔𝗽𝗽𝗹𝗶𝗰𝗮𝘁𝗶𝗼𝗻 & 𝗧𝗲𝗹𝗲𝗴𝗿𝗮𝗺 𝗕𝗼𝘁\n• 𝗘𝗺𝗮𝗶𝗹 & 𝗦𝗠𝗦 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴 𝗔𝗰𝗰𝗲𝘀𝘀\n• 𝗜𝗩𝗥 𝗦𝘆𝘀𝘁𝗲𝗺\n• 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗧𝗼𝗹𝗹-𝗙𝗿𝗲𝗲 𝗡𝘂𝗺𝗯𝗲𝗿 𝗦𝗽𝗼𝗼𝗳𝗶𝗻𝗴\n• 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗦𝗜𝗣 𝗧𝗿𝘂𝗻𝗸 𝗔𝗰𝗰𝗲𝘀𝘀 (𝗶𝗻𝗯𝗼𝘂𝗻𝗱 & 𝗼𝘂𝘁𝗯𝗼𝘂𝗻𝗱, 𝘄𝗶𝘁𝗵 𝗱𝗲𝗱𝗶𝗰𝗮𝘁𝗲𝗱 𝗿𝗼𝘂𝘁𝗶𝗻𝗴 𝗮𝗻𝗱 𝗲𝗻𝗵𝗮𝗻𝗰𝗲𝗱 𝗾𝘂𝗮𝗹𝗶𝘁𝘆)\n\n📌 𝗔𝘀 𝗮𝗻 𝗶𝗻𝘁𝗿𝗼𝗱𝘂𝗰𝘁𝗼𝗿𝘆 𝗼𝗳𝗳𝗲𝗿, 𝘁𝗵𝗲 𝗣𝗹𝗮𝘁𝗶𝗻𝘂𝗺 𝗣𝗹𝗮𝗻 𝗶𝘀 𝗮𝘃𝗮𝗶𝗹𝗮𝗯𝗹𝗲 𝗳𝗼𝗿 𝟭 𝗠𝗼𝗻𝘁𝗵 𝗮𝘁 $𝟭𝟱𝟬 — 𝗙𝗼𝗿 𝗡𝗲𝘄 𝗖𝗹𝗶𝗲𝗻𝘁𝘀 𝗢𝗻𝗹𝘆'
         }
     ]
 };
@@ -525,6 +578,7 @@ async function sendAnimatedWelcome(chatId) {
     try {
         await bot.telegram.sendChatAction(chatId, 'typing');
         const msg = await bot.telegram.sendMessage(chatId, '🔄 𝗕𝗼𝗼𝘁𝗶𝗻𝗴 𝘀𝘆𝘀𝘁𝗲𝗺...');
+        addMessageToCleanup(chatId, msg.message_id);
         await delay(600);
         await bot.telegram.editMessageText(chatId, msg.message_id, undefined, '⚡ 𝗣𝗿𝗲𝗽𝗮𝗿𝗶𝗻𝗴 𝘀𝗲𝗰𝘂𝗿𝗲 𝗰𝗼𝗻𝗻𝗲𝗰𝘁𝗶𝗼𝗻...');
         await delay(500);
@@ -532,11 +586,11 @@ async function sendAnimatedWelcome(chatId) {
         await delay(450);
         await bot.telegram.editMessageText(chatId, msg.message_id, undefined, '🌟 𝗥𝗲𝗮𝗱𝘆!');
         await delay(300);
-        
+
         const user = users.get(chatId) || {};
         const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
         const welcomeText = `${t(chatId, 'welcome')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-        
+
         await bot.telegram.editMessageText(chatId, msg.message_id, undefined, welcomeText, { 
             reply_markup: getLangKeyboard(),
             parse_mode: 'Markdown'
@@ -550,6 +604,7 @@ async function sendAnimatedAdminPanel(chatId) {
     try {
         await bot.telegram.sendChatAction(chatId, 'typing');
         const msg = await bot.telegram.sendMessage(chatId, '🔐 𝗩𝗲𝗿𝗶𝗳𝘆𝗶𝗻𝗴 𝗮𝗱𝗺𝗶𝗻 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀...');
+        addMessageToCleanup(chatId, msg.message_id);
         await delay(600);
         await bot.telegram.editMessageText(chatId, msg.message_id, undefined, '🧭 𝗟𝗼𝗮𝗱𝗶𝗻𝗴 𝗮𝗱𝗺𝗶𝗻 𝘁𝗼𝗼𝗹𝘀...');
         await delay(400);
@@ -564,20 +619,44 @@ async function sendMainMenu(chatId) {
     const user = users.get(chatId) || {};
     const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
     const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-    
+
     try {
-        await bot.telegram.sendMessage(chatId, menuText, {
+        const msg = await bot.telegram.sendMessage(chatId, menuText, {
             reply_markup: getMainMenuKeyboard(chatId),
             parse_mode: 'Markdown'
         });
+        addMessageToCleanup(chatId, msg.message_id);
     } catch (e) {
         console.error('Error sending main menu:', e);
+    }
+}
+
+// ---------- Enhanced message sending with cleanup ----------
+async function sendMessageWithCleanup(chatId, text, options = {}) {
+    try {
+        const msg = await bot.telegram.sendMessage(chatId, text, options);
+        addMessageToCleanup(chatId, msg.message_id);
+        return msg;
+    } catch (e) {
+        console.error('Error sending message:', e);
+        return null;
     }
 }
 
 // ---------- Handlers: /start ----------
 bot.start(async (ctx) => {
     const chatId = ctx.chat.id;
+    
+    // Cleanup old messages first
+    await cleanupUserMessages(chatId);
+    
+    // Try to delete the start command message
+    try {
+        await ctx.deleteMessage();
+    } catch (e) {
+        // Ignore if can't delete (message too old or no permissions)
+    }
+    
     if (!users.has(chatId)) {
         users.set(chatId, { lang: 'en' });
         saveUsers();
@@ -593,8 +672,12 @@ bot.start(async (ctx) => {
 bot.on('callback_query', async (ctx) => {
     const chatId = ctx.update.callback_query.message.chat.id;
     const data = ctx.update.callback_query.data;
+    const messageId = ctx.update.callback_query.message.message_id;
 
     try {
+        // Add callback message to cleanup queue
+        addMessageToCleanup(chatId, messageId);
+
         // Language change
         if (data.startsWith('lang_')) {
             const lang = data.split('_')[1];
@@ -610,11 +693,11 @@ bot.on('callback_query', async (ctx) => {
                 await delay(500);
                 await ctx.editMessageText('✅ 𝗟𝗮𝗻𝗴𝘂𝗮𝗴𝗲 𝘂𝗽𝗱𝗮𝘁𝗲𝗱!');
                 await delay(350);
-                
+
                 const user = users.get(chatId) || {};
                 const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
                 const welcomeText = `${t(chatId, 'language_set')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-                
+
                 await ctx.editMessageText(welcomeText, { 
                     reply_markup: getMainMenuKeyboard(chatId), 
                     parse_mode: 'Markdown' 
@@ -633,21 +716,14 @@ bot.on('callback_query', async (ctx) => {
                     const user = users.get(chatId) || {};
                     const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
                     const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-                    
+
                     await ctx.editMessageText(menuText, { 
                         reply_markup: getMainMenuKeyboard(chatId), 
                         parse_mode: 'Markdown' 
                     }); 
                 } catch(e) {
                     // If editing fails, send a new message
-                    const user = users.get(chatId) || {};
-                    const activePlan = user.activePlan ? getPlanName(chatId, user.activePlan) : 'None';
-                    const menuText = `${t(chatId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${chatId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-                    
-                    await ctx.telegram.sendMessage(chatId, menuText, {
-                        reply_markup: getMainMenuKeyboard(chatId),
-                        parse_mode: 'Markdown'
-                    });
+                    await sendMainMenu(chatId);
                 } 
             } 
             return; 
@@ -719,13 +795,14 @@ bot.on('callback_query', async (ctx) => {
                     if (crypto.qrFileId) {
                         try {
                             // Send QR code as a separate message first
-                            await ctx.telegram.sendPhoto(chatId, crypto.qrFileId, {
+                            const qrMsg = await bot.telegram.sendPhoto(chatId, crypto.qrFileId, {
                                 caption: `📊 𝗤𝗥 𝗖𝗼𝗱𝗲 𝗳𝗼𝗿 ${crypto.name}`,
                                 parse_mode: 'Markdown'
                             });
+                            addMessageToCleanup(chatId, qrMsg.message_id);
 
                             // Then send payment instructions with buttons
-                            await ctx.telegram.sendMessage(chatId, instr, {
+                            await sendMessageWithCleanup(chatId, instr, {
                                 parse_mode: 'Markdown',
                                 reply_markup: getPaymentDoneKeyboard(chatId)
                             });
@@ -764,7 +841,7 @@ bot.on('callback_query', async (ctx) => {
                     });
                 } catch (editError) {
                     // If editing fails (message might be too old), send a new message
-                    await ctx.telegram.sendMessage(chatId, t(chatId, 'ask_screenshot'), { 
+                    await sendMessageWithCleanup(chatId, t(chatId, 'ask_screenshot'), { 
                         reply_markup: getBackToMainKeyboard(chatId),
                         parse_mode: 'Markdown'
                     });
@@ -807,7 +884,7 @@ bot.on('callback_query', async (ctx) => {
         if (data === 'demo_video') {
             await ctx.answerCbQuery();
             try {
-                await ctx.telegram.sendMessage(chatId, '🎥 𝗪𝗮𝘁𝗰𝗵 𝗼𝘂𝗿 𝗼𝗳𝗳𝗶𝗰𝗶𝗮𝗹 𝗱𝗲𝗺𝗼 & 𝘂𝗽𝗱𝗮𝘁𝗲𝘀:', {
+                await sendMessageWithCleanup(chatId, '🎥 𝗪𝗮𝘁𝗰𝗵 𝗼𝘂𝗿 𝗼𝗳𝗳𝗶𝗰𝗶𝗮𝗹 𝗱𝗲𝗺𝗼 & 𝘂𝗽𝗱𝗮𝘁𝗲𝘀:', {
                     reply_markup: {
                         inline_keyboard: [
                             [{ text: '🔗 𝗩𝗶𝘀𝗶𝘁 𝗖𝗵𝗮𝗻𝗻𝗲𝗹', url: OFFICIAL_CHANNEL_LINK }],
@@ -887,7 +964,7 @@ bot.on('callback_query', async (ctx) => {
             } else if (data === 'admin_add_qr') {
                 await ctx.answerCbQuery();
                 try {
-                    await ctx.editMessageText('📷 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝘆𝗽𝘁𝗼 𝘁𝗼 𝗮𝗱𝗱 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
+                    await ctx.editMessageText('📷 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀 𝘁𝗼 𝗮𝗱𝗱 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
                         reply_markup: getCryptoSelectionKeyboard('add_qr')
                     });
                 } catch(e){
@@ -896,7 +973,7 @@ bot.on('callback_query', async (ctx) => {
             } else if (data === 'admin_remove_qr') {
                 await ctx.answerCbQuery();
                 try {
-                    await ctx.editMessageText('🗑️ 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝘆𝗽𝘁𝗼 𝘁𝗼 𝗿𝗲𝗺𝗼𝘃𝗲 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
+                    await ctx.editMessageText('🗑️ 𝗦𝗲𝗹𝗲𝗰𝘁 𝗮 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀 𝘁𝗼 𝗿𝗲𝗺𝗼𝘃𝗲 𝗤𝗥 𝗰𝗼𝗱𝗲:', {
                         reply_markup: getCryptoSelectionKeyboard('remove_qr')
                     });
                 } catch(e){
@@ -937,11 +1014,11 @@ bot.on('callback_query', async (ctx) => {
                 const approval = pendingApprovals[index];
                 if (approval) {
                     await ctx.answerCbQuery('✅ 𝗔𝗽𝗽𝗿𝗼𝘃𝗶𝗻𝗴...');
-                    
+
                     // Remove from pending approvals
                     pendingApprovals.splice(index, 1);
                     savePendingApprovals();
-                    
+
                     // Activate plan for user
                     const user = users.get(approval.userId);
                     if (user) {
@@ -949,26 +1026,26 @@ bot.on('callback_query', async (ctx) => {
                         users.set(approval.userId, user);
                         saveUsers();
                     }
-                    
+
                     // Notify user
                     try {
-                        await bot.telegram.sendMessage(approval.userId, t(approval.userId, 'payment_approved'), {
+                        await sendMessageWithCleanup(approval.userId, t(approval.userId, 'payment_approved'), {
                             parse_mode: 'Markdown'
                         });
-                        
+
                         // Send updated main menu to user
                         const userUpdated = users.get(approval.userId) || {};
                         const activePlan = userUpdated.activePlan ? getPlanName(approval.userId, userUpdated.activePlan) : 'None';
                         const menuText = `${t(approval.userId, 'choose_plan')}\n\n🔢 𝗜𝗗: ${approval.userId}\n📋 𝗔𝗰𝘁𝗶𝘃𝗲 𝗣𝗹𝗮𝗻: ${activePlan}`;
-                        
-                        await bot.telegram.sendMessage(approval.userId, menuText, {
+
+                        await sendMessageWithCleanup(approval.userId, menuText, {
                             reply_markup: getMainMenuKeyboard(approval.userId),
                             parse_mode: 'Markdown'
                         });
                     } catch (e) {
                         console.error('Error notifying user:', e);
                     }
-                    
+
                     try {
                         // Edit the admin message to show approved
                         await ctx.editMessageCaption({
@@ -986,20 +1063,20 @@ bot.on('callback_query', async (ctx) => {
                 const approval = pendingApprovals[index];
                 if (approval) {
                     await ctx.answerCbQuery('❌ 𝗥𝗲𝗷𝗲𝗰𝘁𝗶𝗻𝗴...');
-                    
+
                     // Remove from pending approvals
                     pendingApprovals.splice(index, 1);
                     savePendingApprovals();
-                    
+
                     // Notify user
                     try {
-                        await bot.telegram.sendMessage(approval.userId, t(approval.userId, 'payment_rejected'), {
+                        await sendMessageWithCleanup(approval.userId, t(approval.userId, 'payment_rejected'), {
                             parse_mode: 'Markdown'
                         });
                     } catch (e) {
                         console.error('Error notifying user:', e);
                     }
-                    
+
                     try {
                         // Edit the admin message to show rejected
                         await ctx.editMessageCaption({
@@ -1026,14 +1103,20 @@ bot.on('callback_query', async (ctx) => {
 bot.on('message', async (ctx) => {
     const chatId = ctx.chat.id;
     const user = users.get(chatId) || {};
+    const messageId = ctx.message.message_id;
 
     // Ignore slash commands
     if (ctx.message.text && ctx.message.text.startsWith('/')) return;
 
+    // Add user message to cleanup queue (except for photos during payment)
+    if (!(ctx.message.photo && user.plan && user.crypto)) {
+        addMessageToCleanup(chatId, messageId);
+    }
+
     // Admin: broadcast
     if (chatId === ADMIN_ID && user.waitingForBroadcast && ctx.message.text) {
         await bot.telegram.sendChatAction(chatId, 'typing');
-        const status = await bot.telegram.sendMessage(chatId, '📡 𝗣𝗿𝗲𝗽𝗮𝗿𝗶𝗻𝗴 𝗯𝗿𝗼𝗮𝗱𝗰𝗮𝘀𝘁...');
+        const status = await sendMessageWithCleanup(chatId, '📡 𝗣𝗿𝗲𝗽𝗮𝗿𝗶𝗻𝗴 𝗯𝗿𝗼𝗮𝗱𝗰𝗮𝘀𝘁...');
         await delay(500);
         await bot.telegram.editMessageText(chatId, status.message_id, undefined, '📤 𝗦𝗲𝗻𝗱𝗶𝗻𝗴 𝘁𝗼 𝘂𝘀𝗲𝗿𝘀...').catch(()=>{});
 
@@ -1049,7 +1132,7 @@ bot.on('message', async (ctx) => {
         for (const [uid, userData] of users.entries()) {
             if (uid !== ADMIN_ID) {
                 try {
-                    await bot.telegram.sendMessage(uid, `📢 ${stylizeFullText(broadcastMessage)}`, { parse_mode: 'Markdown' });
+                    await sendMessageWithCleanup(uid, `📢 ${stylizeFullText(broadcastMessage)}`, { parse_mode: 'Markdown' });
                     sent++;
                     await delay(100); // Rate limiting
                 } catch (error) {
@@ -1062,7 +1145,7 @@ bot.on('message', async (ctx) => {
             await bot.telegram.editMessageText(chatId, status.message_id, undefined, 
                 `✅ 𝗕𝗿𝗼𝗮𝗱𝗰𝗮𝘀𝘁 𝗰𝗼𝗺𝗽𝗹𝗲𝘁𝗲𝗱!\n📊 𝗦𝗲𝗻𝘁 𝘁𝗼 ${sent} 𝘂𝘀𝗲𝗿𝘀\n❌ 𝗙𝗮𝗶𝗹𝗲𝗱: ${failed}`).catch(()=>{});
             setTimeout(() => {
-                bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
+                sendMessageWithCleanup(chatId, t(chatId, 'admin_panel'), { 
                     reply_markup: getAdminKeyboard(chatId),
                     parse_mode: 'Markdown'
                 });
@@ -1073,7 +1156,7 @@ bot.on('message', async (ctx) => {
 
     // Admin: add crypto
     if (chatId === ADMIN_ID && user.waitingForCrypto && ctx.message.text) {
-        const processing = await bot.telegram.sendMessage(chatId, '🔄 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝘆𝗽𝘁𝗼 𝗮𝗱𝗱𝗶𝘁𝗶𝗼𝗻...');
+        const processing = await sendMessageWithCleanup(chatId, '🔄 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀 𝗮𝗱𝗱𝗶𝘁𝗶𝗼𝗻...');
         const parts = ctx.message.text.split('|').map(s => s.trim());
         if (parts.length === 2) {
             cryptos.push({ name: stylizeFullText(parts[0]), address: parts[1], qrFileId: null }); 
@@ -1082,8 +1165,8 @@ bot.on('message', async (ctx) => {
             users.set(chatId, user); 
             saveUsers();
             await bot.telegram.editMessageText(chatId, processing.message_id, undefined, 
-                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗮𝗱𝗱𝗲𝗱 𝗰𝗿𝘆𝗽𝘁𝗼: ${stylizeFullText(parts[0])}`).catch(()=>{});
-            setTimeout(() => bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
+                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗮𝗱𝗱𝗲𝗱 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀: ${stylizeFullText(parts[0])}`).catch(()=>{});
+            setTimeout(() => sendMessageWithCleanup(chatId, t(chatId, 'admin_panel'), { 
                 reply_markup: getAdminKeyboard(chatId),
                 parse_mode: 'Markdown'
             }), 900);
@@ -1093,7 +1176,7 @@ bot.on('message', async (ctx) => {
             saveUsers();
             await bot.telegram.editMessageText(chatId, processing.message_id, undefined, 
                 '❌ 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗳𝗼𝗿𝗺𝗮𝘁. 𝗨𝘀𝗲: 𝗡𝗮𝗺𝗲|𝗔𝗱𝗱𝗿𝗲𝘀𝘀').catch(()=>{});
-            setTimeout(() => bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
+            setTimeout(() => sendMessageWithCleanup(chatId, t(chatId, 'admin_panel'), { 
                 reply_markup: getAdminKeyboard(chatId),
                 parse_mode: 'Markdown'
             }), 900);
@@ -1103,7 +1186,7 @@ bot.on('message', async (ctx) => {
 
     // Admin: remove crypto
     if (chatId === ADMIN_ID && user.waitingForRemoveCrypto && ctx.message.text) {
-        const proc = await bot.telegram.sendMessage(chatId, '🗑️ 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝘆𝗽𝘁𝗼 𝗿𝗲𝗺𝗼𝘃𝗮𝗹...');
+        const proc = await sendMessageWithCleanup(chatId, '🗑️ 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀 𝗿𝗲𝗺𝗼𝘃𝗮𝗹...');
         const index = parseInt(ctx.message.text.trim(), 10) - 1;
         if (isNaN(index) || index < 0 || index >= cryptos.length) {
             user.waitingForRemoveCrypto = false; 
@@ -1113,7 +1196,7 @@ bot.on('message', async (ctx) => {
                 `❌ 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗻𝘂𝗺𝗯𝗲𝗿. 𝗣𝗹𝗲𝗮𝘀𝗲 𝗲𝗻𝘁𝗲𝗿 𝗮 𝗻𝘂𝗺𝗯𝗲𝗿 𝗯𝗲𝘁𝘄𝗲𝗲𝗻 𝟭 𝗮𝗻𝗱 ${cryptos.length}\n\n${cryptos.map((c,i) => `${i+1}. ${c.name}`).join('\n')}`, {
                 parse_mode: 'Markdown'
             }).catch(()=>{});
-            setTimeout(() => bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
+            setTimeout(() => sendMessageWithCleanup(chatId, t(chatId, 'admin_panel'), { 
                 reply_markup: getAdminKeyboard(chatId),
                 parse_mode: 'Markdown'
             }), 1800);
@@ -1124,10 +1207,10 @@ bot.on('message', async (ctx) => {
             users.set(chatId, user); 
             saveUsers();
             await bot.telegram.editMessageText(chatId, proc.message_id, undefined, 
-                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗿𝗲𝗺𝗼𝘃𝗲𝗱: ${removed.name}\n\n𝗨𝗽𝗱𝗮𝘁𝗲𝗱 𝗹𝗶𝘀𝘁:\n${cryptos.map((c,i) => `${i+1}. ${c.name}`).join('\n') || '❌ 𝗡𝗼 𝗰𝗿𝘆𝗽𝘁𝗼𝘀 𝗿𝗲𝗺𝗮𝗶𝗻𝗶𝗻𝗴'}`, {
+                `✅ 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗿𝗲𝗺𝗼𝘃𝗲𝗱: ${removed.name}\n\n𝗨𝗽𝗱𝗮𝘁𝗲𝗱 𝗹𝗶𝘀𝘁:\n${cryptos.map((c,i) => `${i+1}. ${c.name}`).join('\n') || '❌ 𝗡𝗼 𝗰𝗿𝗲𝗱𝗲𝗻𝘁𝗶𝗮𝗹𝘀 𝗿𝗲𝗺𝗮𝗶𝗻𝗶𝗻𝗴'}`, {
                 parse_mode: 'Markdown'
             }).catch(()=>{});
-            setTimeout(() => bot.telegram.sendMessage(chatId, t(chatId, 'admin_panel'), { 
+            setTimeout(() => sendMessageWithCleanup(chatId, t(chatId, 'admin_panel'), { 
                 reply_markup: getAdminKeyboard(chatId),
                 parse_mode: 'Markdown'
             }), 1200);
@@ -1147,7 +1230,7 @@ bot.on('message', async (ctx) => {
             users.set(chatId, user);
             saveUsers();
 
-            await ctx.reply(`✅ 𝗤𝗥 𝗰𝗼𝗱𝗲 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗮𝗱𝗱𝗲𝗱 𝗳𝗼𝗿: ${cryptoName}`, {
+            await sendMessageWithCleanup(chatId, `✅ 𝗤𝗥 𝗰𝗼𝗱𝗲 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆 𝗮𝗱𝗱𝗲𝗱 𝗳𝗼𝗿: ${cryptoName}`, {
                 reply_markup: getAdminKeyboard(chatId)
             });
         }
@@ -1156,14 +1239,14 @@ bot.on('message', async (ctx) => {
 
     // User: payment screenshot (photo)
     if (ctx.message.photo && user.plan && user.crypto) {
-        const proc = await bot.telegram.sendMessage(chatId, '📸 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝘀𝗰𝗿𝗲𝗲𝗻𝘀𝗵𝗼𝘁...');
+        const proc = await sendMessageWithCleanup(chatId, '📸 𝗣𝗿𝗼𝗰𝗲𝘀𝘀𝗶𝗻𝗴 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝘀𝗰𝗿𝗲𝗲𝗻𝘀𝗵𝗼𝘁...');
         await delay(600);
         await bot.telegram.editMessageText(chatId, proc.message_id, undefined, '🔍 𝗩𝗲𝗿𝗶𝗳𝘆𝗶𝗻𝗴 𝗽𝗮𝘆𝗺𝗲𝗻𝘁 𝗱𝗲𝘁𝗮𝗶𝗹𝘀...').catch(()=>{});
         await delay(450);
         await bot.telegram.editMessageText(chatId, proc.message_id, undefined, '📋 𝗟𝗼𝗴𝗴𝗶𝗻𝗴 𝗽𝘂𝗿𝗰𝗵𝗮𝘀𝗲 𝗶𝗻𝗳𝗼𝗿𝗺𝗮𝘁𝗶𝗼𝗻...').catch(()=>{});
 
         const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
-        
+
         // Add to pending approvals instead of directly activating
         const pendingIndex = pendingApprovals.length;
         pendingApprovals.push({ 
@@ -1203,7 +1286,7 @@ bot.on('message', async (ctx) => {
         await bot.telegram.editMessageText(chatId, proc.message_id, undefined, '✅ 𝗣𝗮𝘆𝗺𝗲𝗻𝘁 𝘀𝗰𝗿𝗲𝗲𝗻𝘀𝗵𝗼𝘁 𝗿𝗲𝗰𝗲𝗶𝘃𝗲𝗱 𝘀𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹𝗹𝘆!').catch(()=>{});
         await delay(600);
 
-        await bot.telegram.sendMessage(chatId, t(chatId, 'pending_approval'), { 
+        await sendMessageWithCleanup(chatId, t(chatId, 'pending_approval'), { 
             reply_markup: getBackToMainKeyboard(chatId),
             parse_mode: 'Markdown'
         });
@@ -1217,7 +1300,24 @@ bot.on('message', async (ctx) => {
         return;
     }
 
-    // Ignore other messages to keep chat tidy
+    // Cleanup unwanted user messages (non-command text messages)
+    if (ctx.message.text && !ctx.message.text.startsWith('/')) {
+        try {
+            // Delete the unwanted message immediately
+            await ctx.deleteMessage();
+            
+            // Send a temporary warning that will auto-delete
+            const warning = await sendMessageWithCleanup(chatId, '⚠️ 𝗣𝗹𝗲𝗮𝘀𝗲 𝘂𝘀𝗲 𝘁𝗵𝗲 𝗯𝘂𝘁𝘁𝗼𝗻𝘀 𝗽𝗿𝗼𝘃𝗶𝗱𝗲𝗱 𝗶𝗻 𝘁𝗵𝗲 𝗺𝗲𝗻𝘂 𝘁𝗼 𝗶𝗻𝘁𝗲𝗿𝗮𝗰𝘁 𝘄𝗶𝘁𝗵 𝘁𝗵𝗲 𝗯𝗼𝘁.');
+            
+            // Auto-delete warning after 3 seconds
+            setTimeout(async () => {
+                await cleanupMessage(chatId, warning.message_id);
+            }, 3000);
+        } catch (e) {
+            // Ignore deletion errors
+        }
+        return;
+    }
 });
 
 // ---------- Start-up ----------
@@ -1248,3 +1348,5 @@ bot.catch((err) => {
 });
 
 console.log('✅ Enhanced bot loaded — ready to authenticate and run.');
+
+
