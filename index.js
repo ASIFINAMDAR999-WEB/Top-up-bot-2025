@@ -165,7 +165,7 @@ function stylizeLabel(label) {
 const users = new Map(); // chatId -> { lang, plan, crypto, activePlan, waitingForX... }
 let purchaseLogs = [];
 let cryptos = [
-    { name: '𝗨𝗦𝗗𝗧 (𝗧𝗥𝗖𝟮𝟬)', address: 'TYdBx5944hZZUnfoMCNEDy4pKZ17oC4N3a', qrFileId: null },
+    { name: '𝗨𝗦𝗗𝗧 (𝗧𝗥𝗖𝟮𝟬)', address: 'TDYjHhdb52YGRL8iZtZ4fyFM3wC6VJJk2F', qrFileId: null },
     { name: '𝗨𝗦𝗗𝗧 (𝗘𝗥𝗖𝟮𝟬)', address: '0xd30CD71Fb569D14c67f4cB9c03aA0fF1ad02f3d8', qrFileId: null },
     { name: '𝗨𝗦𝗗𝗧 (𝗕𝗘𝗣𝟮𝟬)', address: '0xd30CD71Fb569D14c67f4cB9c03aA0fF1ad02f3d8', qrFileId: null },
     { name: '𝗕𝗧𝗖', address: 'bc1qrl0c5tyr7hcpa7na8025sgt85aefazun5d4rmy', qrFileId: null },
